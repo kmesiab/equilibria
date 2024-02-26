@@ -1,0 +1,19 @@
+{
+	"httpMethod": "GET",
+	"path": "/api/users/3",
+	"pathParameters": {
+		"id": "123"
+	},
+	"headers": {
+		"Content-Type": "application/json"
+	},
+	"requestContext": {
+		"resourcePath": "/api/users/3",
+		"httpMethod": "GET",
+		"apiId": "12345"
+	},
+	"queryStringParameters": null,
+	"multiValueQueryStringParameters": null,
+	"body": null,
+	"stageVariables": null
+}

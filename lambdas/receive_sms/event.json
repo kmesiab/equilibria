@@ -1,0 +1,23 @@
+{
+  "body": "Body=Hey%2C+I+was+wondering+if+you+thought+maybe+i%27d+be+getting+that+promotion%3F&From=%2B12533243071&To=18333595081&MessageSid=SAxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&AccountSid=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "resource": "/{proxy+}",
+  "path": "/dev/sms-receive",
+  "httpMethod": "POST",
+  "isBase64Encoded": false,
+  "queryStringParameters": {},
+  "multiValueQueryStringParameters": {},
+  "pathParameters": {
+    "proxy": "sms-receive"
+  },
+  "stageVariables": {},
+  "headers": {
+    "Content-Type": "application/x-www-form-urlencoded"
+  },
+  "multiValueHeaders": {
+    "Content-Type": [
+      "application/x-www-form-urlencoded"
+    ]
+  },
+  "requestContext": {
+  }
+}
