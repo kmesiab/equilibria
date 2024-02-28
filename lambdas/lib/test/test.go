@@ -271,29 +271,6 @@ func GenerateMockOpenConversations() *sqlmock.Rows {
 	return rows
 }
 
-// GenerateMockBirthChart generates a mock open birth chart
-// SQL response with one rows, with ID 1.
-func GenerateMockBirthChart() *sqlmock.Rows {
-	rows := GenerateMockBirthChartRowColumns()
-	now := time.Now()
-
-	rows.AddRow(1, 1, now, now, "Washington, USA", now, nil, nil)
-	return rows
-}
-
-func GenerateMockBirthChartRowColumns() *sqlmock.Rows {
-	return sqlmock.NewRows([]string{
-		"id",
-		"user_id",
-		"date_of_birth",
-		"time_of_birth",
-		"place_of_birth",
-		"created_at",
-		"updated_at",
-		"deleted_at",
-	})
-}
-
 func GenerateMockConversationRowColumns() *sqlmock.Rows {
 	return sqlmock.NewRows([]string{
 		"id",

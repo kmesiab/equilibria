@@ -10,17 +10,19 @@ run:
 	cd lambdas && sam build && sam local start-api
 
 # Docker Compose Commands
-up:
+docker-up:
 	@echo "🚀 Starting Docker Compose..."
 	docker-compose up -d
 
-down:
+docker-down:
 	@echo "🛑 Stopping Docker Compose..."
 	docker-compose down
 
-build-up:
+docker-build:
 	@echo "🔨 Building and Starting Docker Compose..."
 	docker-compose up --build -d
+
+docker: generate-sql-init docker-build
 
 # Terraform Commands
 terraform-plan:
@@ -56,7 +58,7 @@ convey:
 	source .env && goconvey -excludedDirs=vendor
 
 # Build all sms Lambda Functions
-build: go-lint build-authorizer build-manage-birth-chart build-login build-receive-sms build-send-sms build-status-sms build-manage-user build-signup-otp
+build: go-lint build-authorizer build-login build-receive-sms build-send-sms build-status-sms build-manage-user build-signup-otp
 
 # Build authorizer lambda function
 build-authorizer:
@@ -109,17 +111,21 @@ build-manage-user:
 # 🗃️ Perform database migrations
 migrate:
 	@echo "🗃️ Performing database migrations..."
-	goose -dir ${MIGRATIONS_DIR} mysql "${DATABASE_USER}:${DATABASE_PASSWORD}@tcp(${DATABASE_HOST})/${DATABASE_NAME}" up
+	goose -dir ${MIGRATIONS_DIR} mysql "${DATABASE_USER}:${MYSQL_ROOT_PASSWORD}@tcp(${DATABASE_HOST})/${DATABASE_NAME}" up
 
 rollback:
 	@echo "🗃️ Performing database migrations..."
 	# Add your database migration command here
 	# Example: goose -dir $(MIGRATIONS_DIR) mysql "user:password@/dbname" up
-	goose -dir ${MIGRATIONS_DIR} mysql "${DATABASE_USER}:${DATABASE_PASSWORD}@tcp(${DATABASE_HOST})/${DATABASE_NAME}" down
+	goose -dir ${MIGRATIONS_DIR} mysql "${DATABASE_USER}:${MYSQL_ROOT_PASSWORD}@tcp(${DATABASE_HOST})/${DATABASE_NAME}" down
 
 # 🗑️ Clear the database by rolling back all migrations
 clear-database:
 	@echo "🗑️ Clearing the entire database..."
-	@while goose -dir ${MIGRATIONS_DIR} mysql "${DATABASE_USER}:${DATABASE_PASSWORD}@tcp(${DATABASE_HOST})/${DATABASE_NAME}" down && [ $$? -eq 0 ]; do \
+	@while goose -dir ${MIGRATIONS_DIR} mysql "${DATABASE_USER}:${MYSQL_ROOT_PASSWORD}@tcp(${DATABASE_HOST})/${DATABASE_NAME}" down && [ $$? -eq 0 ]; do \
 		echo "Rolling back migration..."; \
 	done
+
+generate-sql-init:
+	@echo "📝 Generating SQL init file..."
+	@envsubst < ./init.sql > ./build/init.sql

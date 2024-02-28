@@ -42,13 +42,13 @@ func (r *Repository) GetRandomMessagePairs(user *models.User, limit int) (*[]mod
 
 	err := r.DB.Raw(`
 		SELECT * FROM messages 
-		WHERE (from_user_id = ?)
+		WHERE (from_user_id = ? or to_user_id = ?)
 		AND messages.conversation_id IN (
 			SELECT id FROM conversations ORDER BY RAND()
 		)
 		ORDER BY created_at, from_user_id DESC 
 		LIMIT ?
-	`, user.ID, limit).Scan(&messages).Error
+	`, user.ID, user.ID, limit).Scan(&messages).Error
 
 	if err != nil {
 		return nil, err

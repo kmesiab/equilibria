@@ -50,7 +50,7 @@ func TestMemoryService_GeneratePrompt(t *testing.T) {
 	mock.ExpectQuery("SELECT \\* FROM `message_statuses`").WithArgs(1).
 		WillReturnRows(test.GenerateMockMessageStatus())
 
-	repo := message.NewMemoryService(message.NewMessageRepository(db))
+	repo := message.NewMemoryService(message.NewMessageRepository(db), 1)
 
 	prompt, err := repo.GeneratePrompt(&models.User{ID: 1})
 

@@ -6,21 +6,22 @@ import (
 	"github.com/kmesiab/equilibria/lambdas/models"
 )
 
-type MemoryService struct {
-	*MessageService
-}
-
-func NewMemoryService(repo *Repository) *MemoryService {
-
-	svc := NewMessageService(repo)
-	return &MemoryService{svc}
-}
-
 const (
-	maxMemories   = 150
 	promptHeader  = ""
 	promptLineFmt = "[%s] %s: %s\n"
 )
+
+type MemoryService struct {
+	*MessageService
+
+	MaxMemories int
+}
+
+func NewMemoryService(repo *Repository, maxMemories int) *MemoryService {
+
+	svc := NewMessageService(repo)
+	return &MemoryService{MessageService: svc, MaxMemories: maxMemories}
+}
 
 // GeneratePrompt generates a prompt from the user's previous messages.
 // The prompt output is in the format specified by promptLnFmt. In general,
@@ -37,8 +38,8 @@ func (m *MemoryService) GeneratePrompt(user *models.User) (string, error) {
 	var recentMemories []models.Message
 
 	// Take only the last maxMemories messages
-	if len(*messages) > maxMemories {
-		recentMemories = (*messages)[len(*messages)-maxMemories:]
+	if len(*messages) > m.MaxMemories {
+		recentMemories = (*messages)[len(*messages)-m.MaxMemories:]
 	} else {
 		recentMemories = *messages
 	}
@@ -58,5 +59,5 @@ func (m *MemoryService) GeneratePrompt(user *models.User) (string, error) {
 // memories for all conversations between this user and the service.
 func (m *MemoryService) GetMemories(user *models.User) (*[]models.Message, error) {
 
-	return m.GetRandomMessagePairs(user, maxMemories)
+	return m.GetRandomMessagePairs(user, m.MaxMemories)
 }
