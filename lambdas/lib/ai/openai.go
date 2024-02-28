@@ -12,12 +12,16 @@ import (
 	"github.com/kmesiab/equilibria/lambdas/models"
 )
 
-const CompletionServiceModel = openai.GPT4TurboPreview
+const (
+	CompletionTemperature  = 0.7
+	CompletionServiceModel = openai.GPT4Turbo0125
+	CompletionMaxTokens    = 1000
+)
 
 type OpenAICompletionService struct{}
 
 func (o *OpenAICompletionService) GetCompletion(
-	prompt string, memories *[]models.Message,
+	message, prompt string, memories *[]models.Message,
 ) (string, error) {
 
 	// Metrics
@@ -60,8 +64,14 @@ func (o *OpenAICompletionService) GetCompletion(
 
 	// Add current prompt
 	messages = append(messages, openai.ChatCompletionMessage{
-		Role:    openai.ChatMessageRoleUser,
+		Role:    openai.ChatMessageRoleSystem,
 		Content: prompt,
+	})
+
+	// Add the current message
+	messages = append(messages, openai.ChatCompletionMessage{
+		Role:    openai.ChatMessageRoleUser,
+		Content: message,
 	})
 
 	log.New("OpenAI Audit Trail: Sending prompt.").
@@ -77,10 +87,16 @@ func (o *OpenAICompletionService) GetCompletion(
 	resp, err := client.CreateChatCompletion(
 		context.Background(),
 		openai.ChatCompletionRequest{
-			Model:    CompletionServiceModel,
-			Messages: messages,
+			Model:       CompletionServiceModel,
+			Messages:    messages,
+			Temperature: CompletionTemperature,
+			MaxTokens:   CompletionMaxTokens,
 		},
 	)
+
+	if err != nil {
+		return "", err
+	}
 
 	log.New("OpenAI Audit Trail: Received response.").
 		Add("model", resp.Model).
@@ -90,10 +106,6 @@ func (o *OpenAICompletionService) GetCompletion(
 		Add("response_content", resp.Choices[0].Message.Content).
 		Add("prompt", prompt).
 		Log()
-
-	if err != nil {
-		return "", err
-	}
 
 	return resp.Choices[0].Message.Content, nil
 }
