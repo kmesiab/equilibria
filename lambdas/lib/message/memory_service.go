@@ -61,3 +61,8 @@ func (m *MemoryService) GetMemories(user *models.User) (*[]models.Message, error
 
 	return m.GetRandomMessagePairs(user, m.MaxMemories)
 }
+
+func (m *MemoryService) GetLastNMessagePairs(user *models.User, size int) (*[]models.Message, error) {
+
+	return m.repo.GetLastNMessagePairs(user, size)
+}

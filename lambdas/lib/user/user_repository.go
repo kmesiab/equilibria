@@ -1,6 +1,8 @@
 package user
 
 import (
+	"time"
+
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 
@@ -116,4 +118,25 @@ func (repo *UserRepository) CheckPassword(phone, password string) (bool, error) 
 
 	// Password matches
 	return true, nil
+}
+
+func (repo *UserRepository) GetUsersWithoutConversationsSince(timeLimit time.Time) (*[]models.User, error) {
+
+	var users []models.User
+
+	err := repo.db.Debug().Model(users).Where(`
+	account_status_id = ? 
+	AND NOT EXISTS 
+		(
+			SELECT 1 FROM conversations 
+			WHERE conversations.user_id = users.id 
+			AND conversations.created_at > ?
+	)`,
+		2, timeLimit).Find(&users).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &users, nil
 }

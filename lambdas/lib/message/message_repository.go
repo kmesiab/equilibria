@@ -57,6 +57,24 @@ func (r *Repository) GetRandomMessagePairs(user *models.User, limit int) (*[]mod
 	return &messages, nil
 }
 
+// GetLastNMessagePairs finds the last [n] message pairs for a user.
+func (r *Repository) GetLastNMessagePairs(user *models.User, limit int) (*[]models.Message, error) {
+	var messages []models.Message
+
+	err := r.DB.Raw(`
+		select * from messages 
+		where (from_user_id = ? or to_user_id = ?)
+		order by created_at desc
+		limit ?
+	`, user.ID, user.ID, limit).Scan(&messages).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &messages, nil
+}
+
 // FindByUser finds a Message by its ID.
 func (r *Repository) FindByUser(user *models.User) (*[]models.Message, error) {
 	var messages []models.Message
