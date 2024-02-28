@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 
@@ -69,7 +70,7 @@ func (s *StatusSMSLambdaHandler) HandleRequest(request events.APIGatewayProxyReq
 		s.CloseConversation,
 	); err != nil {
 
-		return log.New("Error handling status for %s", messageInfo.MessageSid).
+		return log.New("Error handling status for %s, %s", messageInfo.MessageSid, err.Error()).
 			AddAPIProxyRequest(&request).AddTwilioMessageInfo(messageInfo).AddError(err).
 			Respond(http.StatusInternalServerError)
 	}
@@ -97,7 +98,9 @@ func (s *StatusSMSLambdaHandler) ProcessMessage(
 
 	if err != nil {
 
-		return err
+		return fmt.Errorf("could not locate reference message: %s - %s",
+			messageInfo.SmsSid, err.Error(),
+		)
 	}
 
 	// convert and update its status

@@ -2,10 +2,12 @@ package user_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"gorm.io/gorm"
 
 	"github.com/kmesiab/equilibria/lambdas/lib/hasher"
 	"github.com/kmesiab/equilibria/lambdas/lib/test"
@@ -205,4 +207,40 @@ func TestUserRepository_CheckPassword(t *testing.T) {
 	valid, err := repo.CheckPassword(test.DefaultTestPhoneNumber, password)
 	assert.NoError(t, err)
 	assert.True(t, valid)
+}
+
+func TestUserRepository_GetUsersWithoutConversationsSince(t *testing.T) {
+	db, mock, err := test.SetupMockDB()
+	assert.NoError(t, err)
+
+	since := time.Now().Add(-time.Hour * 3)
+
+	mock.ExpectQuery("SELECT \\* FROM `users` WHERE account_status_id = \\? AND NOT EXISTS \\( SELECT 1 FROM conversations WHERE conversations.user_id = users.id AND conversations.created_at > \\? \\)").WithArgs(2, since).
+		WillReturnRows(test.GenerateMockUserRepositoryUser())
+
+	repo := user.NewUserRepository(db)
+	users, err := repo.GetUsersWithoutConversationsSince(since)
+
+	require.NoError(t, err,
+		"There should be no errors when getting users without conversations since a given time.",
+	)
+
+	assert.Len(t, users, 1)
+}
+
+func TestUserRepository_GetUsersWithoutConversationsSinceNotFound(t *testing.T) {
+	db, mock, err := test.SetupMockDB()
+	assert.NoError(t, err)
+
+	since := time.Now().Add(-time.Hour * 3)
+
+	mock.ExpectQuery("SELECT \\* FROM `users` WHERE account_status_id = \\? AND NOT EXISTS \\( SELECT 1 FROM conversations WHERE conversations.user_id = users.id AND conversations.created_at > \\? \\)").WithArgs(2, since).
+		WillReturnError(gorm.ErrRecordNotFound)
+
+	repo := user.NewUserRepository(db)
+	users, err := repo.GetUsersWithoutConversationsSince(since)
+
+	assert.Error(t, err, "There should be a Gorm record not found error.")
+	assert.Nil(t, users, "No users should be returned.")
+
 }

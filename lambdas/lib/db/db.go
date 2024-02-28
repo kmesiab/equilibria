@@ -11,6 +11,7 @@ import (
 
 	"github.com/kmesiab/equilibria/lambdas/lib/config"
 	"github.com/kmesiab/equilibria/lambdas/lib/log"
+	"github.com/kmesiab/equilibria/lambdas/lib/utils"
 )
 
 var globalDB *gorm.DB
@@ -47,7 +48,7 @@ func Get(config *config.Config) *gorm.DB {
 		}
 
 		// If we can't reach the database, panic
-		if Ping(globalDB) != nil {
+		if utils.PingDatabase(globalDB) != nil {
 			msg := fmt.Sprintf("failed to ping database: %s\n", err)
 			panic(msg)
 		} else {
@@ -56,23 +57,6 @@ func Get(config *config.Config) *gorm.DB {
 	}
 
 	return globalDB
-}
-
-func Ping(globalDB *gorm.DB) error {
-
-	sqlDB, err := globalDB.DB()
-
-	if err != nil {
-		return err
-	}
-
-	err = sqlDB.Ping()
-
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func IsDuplicateEntryError(err error) bool {

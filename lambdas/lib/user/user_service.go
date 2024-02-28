@@ -1,6 +1,8 @@
 package user
 
 import (
+	"time"
+
 	"github.com/kmesiab/equilibria/lambdas/models"
 )
 
@@ -54,4 +56,9 @@ func (service *UserService) ListUsers() ([]models.User, error) {
 func (service *UserService) SystemUser() (*models.User, error) {
 
 	return service.GetUserByID(1)
+}
+
+func (service *UserService) GetUsersWithoutConversationsSince(since time.Time) (*[]models.User, error) {
+
+	return service.repo.GetUsersWithoutConversationsSince(since)
 }
