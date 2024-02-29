@@ -8,6 +8,7 @@ CREATE TABLE users
     lastname          VARCHAR(100),
     password          VARCHAR(1024),
     email             VARCHAR(100),
+    timezone VARCHAR(50) DEFAULT 'UTC',
     account_status_id BIGINT             NOT NULL DEFAULT 1,
     created_at        DATETIME           not null DEFAULT CURRENT_TIMESTAMP,
     deleted_at        DATETIME                    DEFAULT null,
@@ -16,11 +17,13 @@ CREATE TABLE users
     FOREIGN KEY (account_status_id) REFERENCES account_statuses (id)
 );
 
-INSERT INTO users (phone_number, phone_verified, firstname, lastname, email, account_status_id)
+INSERT INTO users (phone_number, phone_verified, firstname, lastname, email,
+                   account_status_id)
 VALUES ('+18333595081', TRUE, 'System', 'User', '-@-', 2),
        ('+13607102634', TRUE, 'Deanne', 'Doucette', 'deannedoucette@gmail.com', 2),
        ('+17072468797', TRUE, 'Dennis', 'Christo', 'bigplans777@gmail.com', 2),
-       ('+12533243071', TRUE, 'Kevin', 'Mesiab', 'kmesiab+equilibria_sms@gmail.com', 2);
+       ('+12533243071', TRUE, 'Kevin', 'Mesiab', 'kmesiab+equilibria_sms@gmail.com',
+        2);
 
 -- +goose Down
 DROP TABLE IF EXISTS users;
