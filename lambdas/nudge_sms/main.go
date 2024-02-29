@@ -66,6 +66,13 @@ func (h *NudgeSMSLambdaHandler) HandleRequest(e events.EventBridgeEvent) error {
 
 		// Nudge each user in a goroutine
 		go func(u *models.User) {
+
+			// Skip the system user
+			if u.PhoneNumber == models.GetSystemUser().PhoneNumber {
+
+				return
+			}
+
 			err := h.Nudge(u, wg)
 
 			// Nudge failed for some reason

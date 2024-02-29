@@ -131,8 +131,12 @@ func (repo *UserRepository) GetUsersWithoutConversationsSince(timeLimit time.Tim
 			SELECT 1 FROM conversations 
 			WHERE conversations.user_id = users.id 
 			AND conversations.created_at > ?
+			AND phone_verified = true
 	)`,
-		2, timeLimit).Find(&users).Error
+		models.AccountStatusActive,
+		timeLimit,
+	).Find(&users).
+		Error
 
 	if err != nil {
 		return nil, err
