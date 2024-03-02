@@ -128,13 +128,13 @@ func (repo *UserRepository) GetUsersWithoutConversationsSince(timeLimit time.Tim
 	account_status_id = ? 
 	AND NOT EXISTS 
 		(
-			SELECT 1 FROM conversations 
-			WHERE conversations.user_id = users.id 
-			AND conversations.created_at > ?
+			SELECT 1 FROM messages 
+			WHERE (messages.from_user_id = users.id or messages.to_user_id = users.id)
+			AND messages.created_at > ?
 			AND phone_verified = true
 	)`,
 		models.AccountStatusActive,
-		timeLimit,
+		timeLimit.UTC(),
 	).Find(&users).
 		Error
 
