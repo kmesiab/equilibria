@@ -1,7 +1,7 @@
 resource "aws_cloudwatch_event_rule" "nudger_event_rule" {
   name                = "nudger-event-rule"
-  description         = "Triggers nudger Lambda function"
-  schedule_expression = "rate(1 hour)"
+  description         = "Triggers nudger Lambda function once an hour between 9am and 10pm PST"
+  schedule_expression = "cron(0 17-23,0-4 * * ? *)"
 }
 
 resource "aws_cloudwatch_event_target" "nudger_event_target" {

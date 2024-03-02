@@ -22,10 +22,10 @@ import (
 )
 
 // How many past memories to include in the prompt
-const maxMemories = 70
+const maxMemories = 140
 
 // How many immediately previous messages to include in the prompt
-const maxLastFewMessages = 10
+const maxLastFewMessages = 6
 
 type SendSMSLambdaHandler struct {
 	lib.LambdaHandler
