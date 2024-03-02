@@ -25,7 +25,7 @@ import (
 
 const MaxMemories = 20
 
-var TimeSinceLastMessage = time.Now().Add(-time.Hour * 3)
+var TimeSinceLastMessage time.Time
 
 type NudgeSMSLambdaHandler struct {
 	lib.LambdaHandler
@@ -42,7 +42,7 @@ func (h *NudgeSMSLambdaHandler) HandleRequest(e events.EventBridgeEvent) error {
 
 	log.New(
 		"Looking up users without conversations since %s",
-		TimeSinceLastMessage.Format("2006-01-02 15:04:05"),
+		h.NudgeIfNoMessagesSince.Format("2006-01-02 15:04:05"),
 	).Log()
 
 	users, err := h.UserService.GetUsersWithoutConversationsSince(h.NudgeIfNoMessagesSince)
@@ -321,6 +321,8 @@ func main() {
 
 		return
 	}
+
+	TimeSinceLastMessage = time.Now().UTC().Add(time.Hour * -3)
 
 	usrSvc := user.NewUserService(
 		user.NewUserRepository(database),
