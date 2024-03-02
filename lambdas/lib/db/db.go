@@ -20,7 +20,7 @@ var globalDB *gorm.DB
 func Init(config *config.Config) (*gorm.DB, error) {
 
 	// Format the DSN (Data Source Name)
-	dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+	dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8mb4&parseTime=True&loc=UTC",
 		config.DatabaseUser,
 		config.DatabasePassword,
 		config.DatabaseHost,
