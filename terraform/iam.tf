@@ -186,3 +186,4 @@ resource "aws_iam_policy_attachment" "api_gateway_invoke_authorizer_attachment" 
   name       = "api_gateway_invoke_authorizer_attachment"
 }
 
+
