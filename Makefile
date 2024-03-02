@@ -58,7 +58,7 @@ convey:
 	source .env && goconvey -excludedDirs=vendor
 
 # Build all sms Lambda Functions
-build: go-lint build-authorizer build-login build-receive-sms build-send-sms build-status-sms build-manage-user build-signup-otp
+build: go-lint build-authorizer build-login build-receive-sms build-send-sms build-status-sms build-manage-user build-signup-otp build-nudger-sms
 
 # Build authorizer lambda function
 build-authorizer:
@@ -107,6 +107,12 @@ build-manage-user:
 	cd lambdas/manage_user && GOOS=linux GOARCH=amd64 go build -o main && \
 	zip manage_user.zip main && \
 	rm main && mv manage_user.zip ../../build
+
+build-nudger-sms:
+	@echo "🛠 Building Nudger lambda..."
+	cd lambdas/nudge_sms && GOOS=linux GOARCH=amd64 go build -o main && \
+	zip nudge_sms.zip main && \
+	rm main && mv nudge_sms.zip ../../build
 
 # 🗃️ Perform database migrations
 migrate:
