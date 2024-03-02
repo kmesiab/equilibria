@@ -1,11 +1,9 @@
 export TF_VAR_mysql_root_user=$MYSQL_ROOT_USER
 export TF_VAR_mysql_root_password=$MYSQL_ROOT_PASSWORD
 export TF_VAR_database_user=$DATABASE_USER
-export TF_VAR_database_user=$DATABASE_USER
 export TF_VAR_database_password=$DATABASE_PASSWORD
 export TF_VAR_database_name=$DATABASE_NAME
 export TF_VAR_log_level=$LOG_LEVEL
-export TF_VAR_open_ai_api_key=$OPEN_AI_API_KEY
 export TF_VAR_twilio_auth_token=$TWILIO_AUTH_TOKEN
 export TF_VAR_twilio_sid=$TWILIO_SID
 export TF_VAR_twilio_phone_number=$TWILIO_PHONE_NUMBER
