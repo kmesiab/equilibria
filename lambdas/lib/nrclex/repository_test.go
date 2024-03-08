@@ -96,6 +96,28 @@ func TestNrcLexRepository_FindByID(t *testing.T) {
 	assert.NotNil(t, nrcLex)
 }
 
+func TestRepository_FindByUserID_EmptyResult(t *testing.T) {
+	db, mock, err := setupMockDB()
+	require.NoError(t, err)
+	repo := NewRepository(db)
+
+	userID := int64(2) // Assuming this user ID has no associated NrcLex entries
+
+	mock.ExpectQuery("SELECT \\* FROM `nrclex` WHERE user_id = \\?").
+		WithArgs(userID).
+		WillReturnRows(sqlmock.NewRows(nil)) // Return an empty result set
+
+	result, err := repo.FindByUserID(userID, 1)
+
+	require.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Empty(t, result) // Verify result is an empty slice
+
+	// Ensure all expectations were met
+	err = mock.ExpectationsWereMet()
+	assert.NoError(t, err)
+}
+
 func TestNrcLexRepository_Update(t *testing.T) {
 	db, mock, err := setupMockDB()
 	require.NoError(t, err)
@@ -114,26 +136,13 @@ func TestNrcLexRepository_Update(t *testing.T) {
 	mock.ExpectExec("UPDATE `nrclex`").
 		WithArgs(
 			1,
+			1,
 			2,
-			0.6,              // anger
-			0.0,              // anticipation
-			0.0,              // disgust
-			0.0,              // fear
-			0.0,              // trust
-			0.4,              // joy
-			0.0,              // negative
-			0.0,              // positive
-			0.0,              // sadness
-			0.0,              // surprise
-			0.0,              // vader_compound
-			0.0,              // vader_neg
-			0.0,              // vader_neu
-			0.0,              // vader_pos
-			sqlmock.AnyArg(), // created_at
-			sqlmock.AnyArg(), // updated_at, expecting a dynamic value (the current timestamp in this case).
-			nil,              // deleted_at is NULL.
-			1,                // WHERE condition, matching the record to update by ID.
-		).WillReturnResult(sqlmock.NewResult(0, 1)) // Assuming 1 row affected.
+			0.6, // anger
+			0.4, // joy
+			sqlmock.AnyArg(),
+			1, // WHERE condition, matching the record to update by ID.
+		).WillReturnResult(sqlmock.NewResult(1, 1)) // Assuming 1 row affected.
 	mock.ExpectCommit()
 
 	err = repo.Update(nrcLex)
@@ -253,4 +262,83 @@ func TestNrcLexRepository_Update_NonExistentID(t *testing.T) {
 
 	err = repo.Update(nrcLex)
 	assert.Error(t, err)
+}
+
+func TestRepository_FindByMessageID_Found(t *testing.T) {
+	db, mock, err := setupMockDB()
+	require.NoError(t, err)
+	repo := NewRepository(db)
+
+	// Define test data
+	messageID := int64(1)
+	now := time.Now()
+	mockNrcLex := models.NrcLex{
+		ID:        1,
+		UserID:    1,
+		MessageID: messageID,
+		Anger:     0.5,
+		Joy:       0.5,
+		CreatedAt: now,
+	}
+
+	// Set up expectation
+	rows := sqlmock.NewRows([]string{"id", "user_id", "message_id", "anger", "joy", "created_at"}).
+		AddRow(mockNrcLex.ID, mockNrcLex.UserID, mockNrcLex.MessageID, mockNrcLex.Anger, mockNrcLex.Joy, mockNrcLex.CreatedAt)
+
+	mock.ExpectQuery("SELECT \\* FROM `nrclex` WHERE message_id = \\? ORDER BY `nrclex`.`id` LIMIT").
+		WithArgs(messageID, 1).
+		WillReturnRows(rows)
+
+	// Execute the method
+	result, err := repo.FindByMessageID(messageID)
+
+	// Assertions
+	require.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, mockNrcLex, *result)
+
+	// Ensure all expectations were met
+	err = mock.ExpectationsWereMet()
+	assert.NoError(t, err)
+}
+
+func TestRepository_Create_DuplicateRecord(t *testing.T) {
+	db, mock, err := setupMockDB()
+	require.NoError(t, err)
+
+	repo := NewRepository(db)
+
+	// Attempt to insert a record that would violate a unique constraint.
+	nrcLex := &models.NrcLex{
+		UserID:    1,
+		MessageID: 2,
+		Anger:     0.5,
+		Joy:       0.4,
+	}
+
+	// Mock the expected SQL operation and return a duplicate key error.
+	mock.ExpectBegin()
+	mock.ExpectExec("INSERT INTO `nrclex`").
+		WithArgs(
+			nrcLex.UserID,
+			nrcLex.MessageID,
+			nrcLex.Anger,
+			0.0, 0.0, 0.0, 0.0, // Other emotions set to default
+			nrcLex.Joy,
+			0.0, 0.0, 0.0, 0.0, // Other sentiments set to default
+			0.0, 0.0, 0.0, 0.0, // Vader scores set to default
+			sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(),
+		).WillReturnError(errors.New("duplicate key value violates unique constraint \"nrclex_user_id_message_id_key\""))
+	mock.ExpectRollback()
+
+	// Execute the method under test.
+	err = repo.Create(nrcLex)
+
+	// Assert that an error was returned due to the duplicate record.
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "duplicate key value violates unique constraint")
+
+	// Verify that all expectations were met.
+	err = mock.ExpectationsWereMet()
+	assert.NoError(t, err)
 }
