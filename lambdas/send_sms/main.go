@@ -10,11 +10,11 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 
-	"github.com/kmesiab/equilibria/lambdas/emotions"
 	"github.com/kmesiab/equilibria/lambdas/lib"
 	"github.com/kmesiab/equilibria/lambdas/lib/ai"
 	"github.com/kmesiab/equilibria/lambdas/lib/config"
 	"github.com/kmesiab/equilibria/lambdas/lib/db"
+	"github.com/kmesiab/equilibria/lambdas/lib/emotions"
 	"github.com/kmesiab/equilibria/lambdas/lib/log"
 	"github.com/kmesiab/equilibria/lambdas/lib/message"
 	"github.com/kmesiab/equilibria/lambdas/lib/nrclex"
