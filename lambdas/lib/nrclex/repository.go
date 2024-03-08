@@ -43,16 +43,16 @@ func (r *Repository) Update(nrcLex *models.NrcLex) error {
 	// This will only update existing records and won't insert a new one if the record doesn't exist.
 	result := tx.Model(&models.NrcLex{}).Where("id = ?", nrcLex.ID).Updates(nrcLex)
 
-	// Check if the record was found and updated. If not, rollback and return an error.
-	if result.RowsAffected == 0 {
-		tx.Rollback()
-		return gorm.ErrRecordNotFound
-	}
-
 	// Check for other possible errors during the update.
 	if err := result.Error; err != nil {
 		tx.Rollback()
 		return err
+	}
+
+	// Check if the record was found and updated. If not, rollback and return an error.
+	if result.RowsAffected == 0 {
+		tx.Rollback()
+		return gorm.ErrRecordNotFound
 	}
 
 	// Commit the transaction if everything was okay.
@@ -62,4 +62,24 @@ func (r *Repository) Update(nrcLex *models.NrcLex) error {
 // Delete removes a NrcLex from the database.
 func (r *Repository) Delete(id int64) error {
 	return r.DB.Delete(&models.NrcLex{}, id).Error
+}
+
+// FindByMessageID finds a NrcLex by its Message ID.
+func (r *Repository) FindByMessageID(messageID int64) (*models.NrcLex, error) {
+	var nrcLex models.NrcLex
+	result := r.DB.Where("message_id = ?", messageID).First(&nrcLex)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return &nrcLex, nil
+}
+
+// FindByUserID finds all NrcLex entries associated with a given user_id.
+func (r *Repository) FindByUserID(userID int64, limit int) ([]models.NrcLex, error) {
+	var nrcLexes []models.NrcLex
+	result := r.DB.Where("user_id = ?", userID).Find(&nrcLexes).Limit(limit)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return nrcLexes, nil
 }

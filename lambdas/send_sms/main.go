@@ -10,12 +10,14 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 
+	"github.com/kmesiab/equilibria/lambdas/emotions"
 	"github.com/kmesiab/equilibria/lambdas/lib"
 	"github.com/kmesiab/equilibria/lambdas/lib/ai"
 	"github.com/kmesiab/equilibria/lambdas/lib/config"
 	"github.com/kmesiab/equilibria/lambdas/lib/db"
 	"github.com/kmesiab/equilibria/lambdas/lib/log"
 	"github.com/kmesiab/equilibria/lambdas/lib/message"
+	"github.com/kmesiab/equilibria/lambdas/lib/nrclex"
 	"github.com/kmesiab/equilibria/lambdas/lib/twilio"
 	"github.com/kmesiab/equilibria/lambdas/lib/utils"
 	"github.com/kmesiab/equilibria/lambdas/models"
@@ -29,8 +31,13 @@ const maxLastFewMessages = 12
 
 type SendSMSLambdaHandler struct {
 	lib.LambdaHandler
+
+	MaxMemories        int
+	MaxLastFewMemories int
+
 	MemoryService     *message.MemoryService
 	CompletionService ai.CompletionServiceInterface
+	NRCLexService     *emotions.NRCLexService
 }
 
 func (h *SendSMSLambdaHandler) HandleRequest(sqsEvent events.SQSEvent) {
@@ -164,11 +171,46 @@ func (h *SendSMSLambdaHandler) HandleRequest(sqsEvent events.SQSEvent) {
 		msg.MessageType.Name, *smsResponse.To).
 		AddSmsResponse(smsResponse).
 		Log()
+
+	scores, err := h.NRCLexService.ProcessMessage(recipient, &msg)
+
+	if err != nil {
+
+		log.New("Error: Processing NRC lex message: %s", err.Error()).
+			AddError(err).
+			AddUser(recipient).
+			AddSQSEvent(&event).
+			AddError(err).
+			AddMessage(&msg).
+			Log()
+
+		return
+	}
+
+	com := strconv.FormatFloat(scores.VaderEmotionScore.Compound, 'f', 4, 64)
+	pos := strconv.FormatFloat(scores.VaderEmotionScore.Pos, 'f', 4, 64)
+	neg := strconv.FormatFloat(scores.VaderEmotionScore.Neg, 'f', 4, 64)
+	neu := strconv.FormatFloat(scores.VaderEmotionScore.Neu, 'f', 4, 64)
+
+	emotionBlob, _ := json.Marshal(scores)
+
+	log.New("Successfully processed NRC lex message for %s", recipient.PhoneNumber).
+		Add("compound_sentiment", com).
+		Add("neg_sentiment", neg).
+		Add("neu_sentiment", neu).
+		Add("positive_sentiment", pos).
+		Add("raw_scores", string(emotionBlob)).
+		AddUser(&msg.To).
+		AddSQSEvent(&event).
+		AddError(err).
+		AddMessage(&msg).
+		Log()
+
 }
 
 func (h *SendSMSLambdaHandler) GetMemories(recipient *models.User, event events.SQSMessage, msg models.Message) ([]models.Message, error) {
 
-	lastFewMemories, err := h.MemoryService.GetLastNMessagePairs(recipient, maxLastFewMessages)
+	lastFewMemories, err := h.MemoryService.GetLastNMessagePairs(recipient, h.MaxLastFewMemories)
 
 	if err != nil {
 		log.New("Error retrieving last few memories for user %s", recipient.PhoneNumber).
@@ -177,7 +219,7 @@ func (h *SendSMSLambdaHandler) GetMemories(recipient *models.User, event events.
 		return nil, err
 	}
 
-	aFewOlderMemories, err := h.MemoryService.GetRandomMessagePairs(recipient, maxMemories)
+	aFewOlderMemories, err := h.MemoryService.GetRandomMessagePairs(recipient, h.MaxMemories)
 
 	if err != nil {
 		log.New(
@@ -246,9 +288,19 @@ func main() {
 		message.NewMessageRepository(database), maxMemories,
 	)
 
+	nrclexRepo := &nrclex.Repository{DB: database}
+
+	restClient := utils.NewRestClient()
+	nrcClient := nrclex.NewNRCLexClient(restClient.GetClient())
+
 	handler := &SendSMSLambdaHandler{
+
+		MaxMemories:        maxMemories,
+		MaxLastFewMemories: maxLastFewMessages,
+
 		CompletionService: &ai.OpenAICompletionService{},
 		MemoryService:     memoryService,
+		NRCLexService:     emotions.NewNRCLexService(nrcClient, nrclexRepo),
 	}
 
 	handler.Init(database)
