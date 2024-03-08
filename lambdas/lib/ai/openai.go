@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	CompletionTemperature  = 0.7
+	CompletionTemperature  = 0.9
 	CompletionServiceModel = openai.GPT4Turbo0125
 	CompletionMaxTokens    = 600
 )
