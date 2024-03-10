@@ -40,9 +40,9 @@ func TestNudgeSMSLambdaHandler_HandleRequest(t *testing.T) {
 	handler.Init(database)
 
 	testUser := &models.User{
-		ID:          36,
-		PhoneNumber: "+12533243071",
-		Firstname:   "Kevin",
+		ID:          37,
+		PhoneNumber: "+14255821028",
+		Firstname:   "Brandon",
 	}
 
 	wg := &sync.WaitGroup{}
