@@ -24,10 +24,14 @@ import (
 )
 
 // How many past memories to include in the prompt
-const maxMemories = 104
+const maxMemories = 40
 
 // How many immediately previous messages to include in the prompt
-const maxLastFewMessages = 12
+const maxLastFewMessages = 10
+
+// How many memories you have to have before we consider you an 'existing'
+// user, so the model treats you like it knows you well.
+const newUserMemoryCount = 15
 
 type SendSMSLambdaHandler struct {
 	lib.LambdaHandler
@@ -89,6 +93,18 @@ func (h *SendSMSLambdaHandler) HandleRequest(sqsEvent events.SQSEvent) {
 	// Get the memories for the user
 	memories, err := h.GetMemories(recipient, event, msg)
 
+	log.New("Attaching %d memories", len(memories)).
+		AddUser(recipient).
+		Log()
+
+	var promptModifier = ExistingUserModifier
+
+	if len(memories) < newUserMemoryCount {
+
+		log.New("Using new user prompt modifier").AddUser(recipient).Log()
+		promptModifier = NewUserModifier
+	}
+
 	if err != nil {
 		log.New("Error remembering history %s", err.Error()).
 			AddUser(recipient).AddSQSEvent(&event).AddError(err).AddMessage(&msg).Log()
@@ -96,7 +112,7 @@ func (h *SendSMSLambdaHandler) HandleRequest(sqsEvent events.SQSEvent) {
 		return
 	}
 
-	prompt := fmt.Sprintf(ConditioningPrompt, formattedDate, recipient.Firstname)
+	prompt := fmt.Sprintf(ConditioningPrompt, promptModifier, formattedDate, recipient.Firstname)
 
 	log.New("Generated Prompt").Add("prompt", prompt).
 		AddUser(recipient).AddSQSEvent(&event).AddMessage(&msg).
