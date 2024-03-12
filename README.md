@@ -6,3 +6,5 @@
 ![Build](https://github.com/kmesiab/equilibria/actions/workflows/go-lint.yml/badge.svg)
 ![Build](https://github.com/kmesiab/equilibria/actions/workflows/go-test.yml/badge.svg)
 [![Go Report Card](https://goreportcard.com/badge/github.com/kmesiab/equilibria)](https://goreportcard.com/report/github.com/kmesiab/equilibria)
+
+# Equilibria SMS Engine
