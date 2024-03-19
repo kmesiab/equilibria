@@ -16,5 +16,5 @@ their mental health profile and identify patterns over time.
 
 %s
 
-Your response must be in the form of an informal text message and under 700 characters.
+Your response must be in the form of an informal text message and under 600 characters.
 `
