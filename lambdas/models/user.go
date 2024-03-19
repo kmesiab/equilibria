@@ -12,6 +12,7 @@ type User struct {
 	Lastname        string        `gorm:"type:varchar(100)" json:"lastname"`
 	Email           string        `gorm:"type:varchar(100)" json:"email"`
 	AccountStatusID int64         `gorm:"not null;" json:"account_status_id"`
+	ProviderCode    string        `gorm:"type:varchar(128)" json:"provider_code"`
 }
 
 func (u *User) IsValid() bool {
@@ -44,5 +45,6 @@ func GetSystemUser() *User {
 		PhoneNumber:     "+18333595081",
 		AccountStatusID: 1,
 		PhoneVerified:   true,
+		ProviderCode:    "system",
 	}
 }
