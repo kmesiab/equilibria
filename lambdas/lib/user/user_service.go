@@ -29,6 +29,10 @@ func (service *UserService) GetUserByID(id int64) (*models.User, error) {
 	return service.repo.FindByID(id)
 }
 
+func (service *UserService) GetUsersByProviderCode(code string) (*[]models.User, error) {
+	return service.repo.FindByProviderCode(code)
+}
+
 // GetUserByPhoneNumber retrieves a user by their phone number.
 func (service *UserService) GetUserByPhoneNumber(phoneNumber string) (*models.User, error) {
 
