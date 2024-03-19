@@ -124,7 +124,7 @@ func (repo *UserRepository) GetUsersWithoutConversationsSince(timeLimit time.Tim
 
 	var users []models.User
 
-	err := repo.db.Debug().Model(users).Where(`
+	err := repo.db.Model(users).Where(`
 	account_status_id = ? 
 	AND NOT EXISTS 
 		(
