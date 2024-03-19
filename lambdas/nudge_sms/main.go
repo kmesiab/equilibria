@@ -334,7 +334,7 @@ func main() {
 		return
 	}
 
-	TimeSinceLastMessage = time.Now().UTC().Add(time.Hour * -3)
+	TimeSinceLastMessage = time.Now().UTC().Add(time.Hour * -4)
 
 	usrSvc := user.NewUserService(
 		user.NewUserRepository(database),
