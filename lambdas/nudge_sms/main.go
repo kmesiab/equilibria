@@ -23,7 +23,7 @@ import (
 	"github.com/kmesiab/equilibria/lambdas/models"
 )
 
-const MaxMemories = 40
+const MaxMemories = 25
 
 var TimeSinceLastMessage time.Time
 

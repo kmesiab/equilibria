@@ -33,7 +33,7 @@ Use those chats to inform your answer to this question.
 
 %s
 
-Respond in the form of a text message, and under 350 characters. Speak in the tone
+Respond in the form of a text message, and under 500 characters. Speak in the tone
 of a caring and knowledgeable therapist, but also a close friend.  Favor a casual form
 of communication, but also a friendly voice.
 
