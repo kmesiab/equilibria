@@ -82,6 +82,16 @@ func (repo *UserRepository) FindByID(id int64) (*models.User, error) {
 	return &user, err
 }
 
+// FindByProviderCode finds a user by their ID.
+func (repo *UserRepository) FindByProviderCode(code string) (*[]models.User, error) {
+	var users []models.User
+	err := repo.db.Preload("AccountStatus").
+		Where("provider_code = ?", code).
+		Scan(&users).Error
+
+	return &users, err
+}
+
 // FindByPhoneNumber finds a user by their phone number.
 func (repo *UserRepository) FindByPhoneNumber(phoneNumber string) (*models.User, error) {
 	var user models.User
@@ -124,7 +134,7 @@ func (repo *UserRepository) GetUsersWithoutConversationsSince(timeLimit time.Tim
 
 	var users []models.User
 
-	err := repo.db.Debug().Model(users).Where(`
+	err := repo.db.Model(users).Where(`
 	account_status_id = ? 
 	AND NOT EXISTS 
 		(

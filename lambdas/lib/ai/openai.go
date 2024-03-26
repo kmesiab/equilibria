@@ -13,9 +13,10 @@ import (
 )
 
 const (
-	CompletionTemperature  = 0.9
+	CompletionTemperature  = 0.93
 	CompletionServiceModel = openai.GPT4Turbo0125
-	CompletionMaxTokens    = 600
+	CompletionMaxTokens    = 1200
+	FrequencyPenalty       = .2
 )
 
 type OpenAICompletionService struct{}
@@ -87,10 +88,11 @@ func (o *OpenAICompletionService) GetCompletion(
 	resp, err := client.CreateChatCompletion(
 		context.Background(),
 		openai.ChatCompletionRequest{
-			Model:       CompletionServiceModel,
-			Messages:    messages,
-			Temperature: CompletionTemperature,
-			MaxTokens:   CompletionMaxTokens,
+			Model:            CompletionServiceModel,
+			Messages:         messages,
+			Temperature:      CompletionTemperature,
+			MaxTokens:        CompletionMaxTokens,
+			FrequencyPenalty: FrequencyPenalty,
 		},
 	)
 

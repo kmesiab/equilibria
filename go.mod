@@ -7,17 +7,17 @@ require (
 	github.com/Masterminds/formenc v0.0.0-20161208152828-101323df20e2
 	github.com/Netflix/go-env v0.0.0-20220526054621-78278af1949d
 	github.com/aws/aws-lambda-go v1.46.0
-	github.com/aws/aws-sdk-go v1.50.27
+	github.com/aws/aws-sdk-go v1.50.35
 	github.com/aws/aws-sdk-go-v2/config v1.27.4
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.31.1
 	github.com/go-resty/resty/v2 v2.11.0
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/kmesiab/go-key-rotator v0.0.0-20240119054627-d4c0c7a68410
-	github.com/sashabaranov/go-openai v1.20.1
+	github.com/sashabaranov/go-openai v1.20.2
 	github.com/stretchr/testify v1.8.4
 	github.com/twilio/twilio-go v1.19.0
-	golang.org/x/crypto v0.20.0
+	golang.org/x/crypto v0.21.0
 	gorm.io/driver/mysql v1.5.4
 	gorm.io/gorm v1.25.7
 )
