@@ -15,8 +15,8 @@ import (
 const (
 	CompletionTemperature  = 0.93
 	CompletionServiceModel = openai.GPT4Turbo0125
-	CompletionMaxTokens    = 750
-	FrequencyPenalty       = .8
+	CompletionMaxTokens    = 1200
+	FrequencyPenalty       = .2
 )
 
 type OpenAICompletionService struct{}
