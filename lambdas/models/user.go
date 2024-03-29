@@ -13,6 +13,7 @@ type User struct {
 	Email           string        `gorm:"type:varchar(100)" json:"email"`
 	AccountStatusID int64         `gorm:"not null;" json:"account_status_id"`
 	ProviderCode    string        `gorm:"type:varchar(128)" json:"provider_code"`
+	NudgeEnabled    bool          `gorm:"not null;default:true" json:"nudge_enabled"`
 }
 
 func (u *User) IsValid() bool {
@@ -43,8 +44,9 @@ func GetSystemUser() *User {
 		Lastname:        "User",
 		Email:           "-@-",
 		PhoneNumber:     "+18333595081",
-		AccountStatusID: 1,
+		AccountStatusID: 2,
 		PhoneVerified:   true,
 		ProviderCode:    "system",
+		NudgeEnabled:    false,
 	}
 }
