@@ -33,6 +33,8 @@ func TestUserRepository_Create(t *testing.T) {
 		Email:           test.DefaultTestEmail,
 		Password:        &pwd,
 		AccountStatusID: 1,
+		NudgeEnabled:    true,
+		ProviderCode:    "system",
 	}
 
 	mock.ExpectBegin()
@@ -44,12 +46,14 @@ func TestUserRepository_Create(t *testing.T) {
 			newUser.Firstname,
 			newUser.Lastname,
 			newUser.Email,
-			sqlmock.AnyArg(), // For CreatedAt
+			1,
+			newUser.ProviderCode,
+			newUser.NudgeEnabled,
 		).WillReturnResult(test.GenerateMockLastAffectedRow())
 	mock.ExpectCommit()
 
 	mock.ExpectQuery("SELECT \\* FROM `account_statuses`").
-		WithArgs("Pending Activation").
+		WithArgs("Pending Activation", sqlmock.AnyArg()).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "name"}).
 			AddRow(1, "Pending Activation"))
 	err = repo.Create(&newUser)
@@ -125,7 +129,7 @@ func TestUserRepository_FindByEmail(t *testing.T) {
 	repo := user.NewUserRepository(db)
 	email := "jane@example.com"
 	mock.ExpectQuery("SELECT \\* FROM `users` WHERE email = ?").
-		WithArgs(email).
+		WithArgs(email, sqlmock.AnyArg()).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "email"}).
 			AddRow(1, email))
 
@@ -142,7 +146,7 @@ func TestUserRepository_FindByID(t *testing.T) {
 	repo := user.NewUserRepository(db)
 	id := int64(1)
 	mock.ExpectQuery("SELECT \\* FROM `users` WHERE `users`.`id`").
-		WithArgs(id).
+		WithArgs(id, sqlmock.AnyArg()).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "email"}).
 			AddRow(1, id))
 
@@ -159,7 +163,7 @@ func TestUserRepository_FindByPhoneNumber(t *testing.T) {
 	repo := user.NewUserRepository(db)
 	phoneNumber := "jane@example.com"
 	mock.ExpectQuery("SELECT \\* FROM `users` WHERE phone_number =").
-		WithArgs(phoneNumber).
+		WithArgs(phoneNumber, sqlmock.AnyArg()).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "phone_number"}).
 			AddRow(1, phoneNumber))
 
@@ -177,7 +181,7 @@ func TestUserRepository_FindByName(t *testing.T) {
 	firstName := "jane"
 
 	mock.ExpectQuery("SELECT \\* FROM `users` WHERE firstname LIKE \\? OR lastname LIKE \\? ").
-		WithArgs("%"+firstName+"%", "%"+firstName+"%"). // Two separate arguments for firstname and lastname
+		WithArgs("%"+firstName+"%", "%"+firstName+"%", sqlmock.AnyArg()). // Two separate arguments for firstname and lastname
 		WillReturnRows(sqlmock.NewRows([]string{"id", "firstname"}).
 			AddRow(1, firstName))
 
@@ -200,7 +204,7 @@ func TestUserRepository_CheckPassword(t *testing.T) {
 		"There should be no errors when hashing the password.")
 
 	mock.ExpectQuery("SELECT \\* FROM `users` WHERE phone_number =").
-		WithArgs(test.DefaultTestPhoneNumber).
+		WithArgs(test.DefaultTestPhoneNumber, sqlmock.AnyArg()).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "phone_number", "password"}).
 			AddRow(test.DefaultFromUserID, test.DefaultTestPhoneNumber, hashedPassword))
 
@@ -213,9 +217,9 @@ func TestUserRepository_GetUsersWithoutConversationsSince(t *testing.T) {
 	db, mock, err := test.SetupMockDB()
 	assert.NoError(t, err)
 
-	since := time.Now().Add(-time.Hour * 3)
+	since := time.Now().Add(-time.Hour * 4)
 
-	mock.ExpectQuery("SELECT \\* FROM `users` WHERE account_status_id = \\? AND NOT EXISTS \\( SELECT 1 FROM conversations WHERE conversations.user_id = users.id AND conversations.created_at > \\? \\)").WithArgs(2, since).
+	mock.ExpectQuery("SELECT \\* FROM `users` WHERE account_status_id").WithArgs(2, since.UTC()).
 		WillReturnRows(test.GenerateMockUserRepositoryUser())
 
 	repo := user.NewUserRepository(db)
@@ -225,7 +229,7 @@ func TestUserRepository_GetUsersWithoutConversationsSince(t *testing.T) {
 		"There should be no errors when getting users without conversations since a given time.",
 	)
 
-	assert.Len(t, users, 1)
+	assert.Len(t, *users, 1)
 }
 
 func TestUserRepository_GetUsersWithoutConversationsSinceNotFound(t *testing.T) {

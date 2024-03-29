@@ -90,6 +90,6 @@ func TestNRCLexClient_AnalyzeText(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, response)
 	assert.Equal(t, "test", response.Text)
-	assert.Equal(t, 1, response.EmotionScore.Anticipation)
-	assert.Equal(t, 2, response.EmotionScore.Joy)
+	assert.Equal(t, float64(1), response.EmotionScore.Anticipation)
+	assert.Equal(t, float64(2), response.EmotionScore.Joy)
 }

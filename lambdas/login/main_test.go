@@ -38,7 +38,7 @@ func TestLoginLambda_HandleRequest(t *testing.T) {
 	var columnHeaders = []string{"phone_number", "password", "account_status_id", "phone_verified"}
 	// Mock the database query for user retrieval
 	mock.ExpectQuery("SELECT \\* FROM `users` WHERE phone_number =").
-		WithArgs(phoneNumber).
+		WithArgs(phoneNumber, sqlmock.AnyArg()).
 		WillReturnRows(sqlmock.NewRows(columnHeaders).
 			AddRow(phoneNumber, hashedPassword, 2, true))
 

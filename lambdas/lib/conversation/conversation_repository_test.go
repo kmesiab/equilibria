@@ -24,7 +24,7 @@ func TestConversationRepository_FindByID(t *testing.T) {
 
 	repo := conversation.NewConversationRepository(db)
 
-	mock.ExpectQuery(test.ConversationSelectQuery).WithArgs(1).
+	mock.ExpectQuery(test.ConversationSelectQuery).WithArgs(1, sqlmock.AnyArg()).
 		WillReturnRows(test.GenerateMockConversation(false))
 
 	mock.ExpectQuery("SELECT \\* FROM `users`").WithArgs(1).
@@ -73,7 +73,7 @@ func TestConversationRepository_GetAll(t *testing.T) {
 	mock.ExpectQuery("SELECT \\* FROM `account_statuses`").WithArgs(1).
 		WillReturnRows(test.GenerateMockAccountStatusPending())
 
-	mock.ExpectQuery(test.ConversationSelectQuery).WithArgs(2).
+	mock.ExpectQuery(test.ConversationSelectQuery).WithArgs(2, sqlmock.AnyArg()).
 		WillReturnRows(test.GenerateMockConversation(false))
 
 	mock.ExpectQuery("SELECT \\* FROM `users`").WithArgs(1).
@@ -355,7 +355,7 @@ func TestConversationRepository_GetOpenConversationsByUserIDNoResults(t *testing
 		WillReturnRows(sqlmock.NewRows(nil))
 
 	// Mock query for fetching user and account status
-	mock.ExpectQuery("SELECT \\* FROM `users`").WithArgs(1).
+	mock.ExpectQuery("SELECT \\* FROM `users`").WithArgs(1, sqlmock.AnyArg()).
 		WillReturnRows(test.GenerateMockUserRepositoryUser())
 	mock.ExpectQuery("SELECT \\* FROM `account_statuses`").WithArgs(1).
 		WillReturnRows(test.GenerateMockUserRepositoryUser())

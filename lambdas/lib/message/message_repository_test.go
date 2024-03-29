@@ -79,7 +79,7 @@ func TestMessageRepository_FindByID(t *testing.T) {
 
 	repo := message.NewMessageRepository(db)
 
-	mock.ExpectQuery(test.MessageSelectQuery).WithArgs(1).
+	mock.ExpectQuery(test.MessageSelectQuery).WithArgs(1, sqlmock.AnyArg()).
 		WillReturnRows(test.GenerateMockMessageRepositoryMessages())
 
 	mock.ExpectQuery("SELECT \\* FROM `conversations`").WithArgs(1).
@@ -128,7 +128,7 @@ func TestMessageRepository_GetNoRows(t *testing.T) {
 
 	repo := message.NewMessageRepository(db)
 
-	mock.ExpectQuery(test.MessageSelectQuery).WithArgs(1).
+	mock.ExpectQuery(test.MessageSelectQuery).WithArgs(1, sqlmock.AnyArg()).
 		WillReturnRows(sqlmock.NewRows([]string{}))
 
 	_, err = repo.FindByID(1)

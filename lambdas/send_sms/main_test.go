@@ -46,7 +46,7 @@ func TestHandleRequest(t *testing.T) {
 	db, mock, err := test.SetupMockDB()
 
 	mock.ExpectQuery("SELECT \\* FROM `users` WHERE `users`.`id`").
-		WithArgs(3).
+		WithArgs(3, sqlmock.AnyArg()).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "email"}).
 			AddRow(1, test.DefaultTestEmail))
 

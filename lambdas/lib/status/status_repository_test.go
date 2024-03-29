@@ -23,7 +23,7 @@ func TestStatusRepository_FindByID(t *testing.T) {
 	repo := status.NewStatusRepository(db)
 
 	mock.ExpectQuery("SELECT \\* FROM `account_statuses`").
-		WithArgs(1).WillReturnRows(
+		WithArgs(1, sqlmock.AnyArg()).WillReturnRows(
 		TestStatusColumns.AddRow(1, "Active"))
 
 	accountStatus, err := repo.FindByID(1)
@@ -41,7 +41,7 @@ func TestStatusRepository_FindByName(t *testing.T) {
 	repo := status.NewStatusRepository(db)
 
 	mock.ExpectQuery("SELECT \\* FROM `account_statuses`").
-		WithArgs("Active").
+		WithArgs("Active", sqlmock.AnyArg()).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "name"}).
 			AddRow(1, "Active"))
 

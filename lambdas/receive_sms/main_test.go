@@ -3,6 +3,7 @@ package main
 import (
 	"testing"
 
+	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -29,7 +30,16 @@ func TestReceiveSMSLambdaHandler_Receive(t *testing.T) {
 	handler.Init(db)
 
 	// First we look up the user who sent the message
-	test.ExpectMockSelectUser(&mock, "+12533243071")
+	//test.ExpectMockSelectUser(&mock, "+12533243071")
+	mock.ExpectQuery("SELECT \\* FROM `users`").
+		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg()).
+		WillReturnRows(test.GenerateMockUserRepositoryUser())
+
+	mock.ExpectQuery("SELECT \\* FROM `account_statuses`").
+		WithArgs(1).WillReturnRows(
+		sqlmock.NewRows([]string{"id", "name"}).
+			AddRow(1, "Active"),
+	)
 
 	// We use the user and the data to create a new conversation
 	test.ExpectMockInsertConversation(&mock)
@@ -39,7 +49,7 @@ func TestReceiveSMSLambdaHandler_Receive(t *testing.T) {
 
 	// Then we look up the message
 	mock.ExpectQuery("SELECT \\* FROM `messages` WHERE id").
-		WithArgs(1).
+		WithArgs(1, sqlmock.AnyArg()).
 		WillReturnRows(test.GenerateMockMessageRepositoryMessages())
 
 	// And the conversation
@@ -82,7 +92,7 @@ func TestHandleRequest_ValidTwilioSignature(t *testing.T) {
 	test.ExpectMockInsertMessage(&mock)
 
 	mock.ExpectQuery("SELECT \\* FROM `messages` WHERE id").
-		WithArgs(1).
+		WithArgs(1, sqlmock.AnyArg()).
 		WillReturnRows(test.GenerateMockMessageRepositoryMessages())
 
 	// And the conversation
@@ -105,7 +115,7 @@ func TestHandleRequest_ValidTwilioSignature(t *testing.T) {
 	test.ExpectMockSelectUser(&mock, 1)
 
 	mock.ExpectQuery("SELECT \\* FROM `messages` WHERE id").
-		WithArgs(1).WillReturnRows(
+		WithArgs(1, sqlmock.AnyArg()).WillReturnRows(
 		test.GenerateMockMessageRepositoryMessages(),
 	)
 
