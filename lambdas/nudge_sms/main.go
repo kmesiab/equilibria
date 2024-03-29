@@ -62,10 +62,17 @@ func (h *NudgeSMSLambdaHandler) HandleRequest(e events.EventBridgeEvent) error {
 	wg := &sync.WaitGroup{}
 
 	for _, u := range *users {
+
+		if !u.NudgeEnabled {
+
+			continue
+		}
+
 		wg.Add(1)
 
 		// Nudge each user in a goroutine
-		go func(u *models.User) {
+		go func(u *models.User, wg *sync.WaitGroup) {
+			defer wg.Done()
 
 			// Skip the system user
 			if u.PhoneNumber == models.GetSystemUser().PhoneNumber {
@@ -80,7 +87,7 @@ func (h *NudgeSMSLambdaHandler) HandleRequest(e events.EventBridgeEvent) error {
 
 				log.New("Error nudging user %s", u.PhoneNumber).Log()
 			}
-		}(&u)
+		}(&u, wg)
 	}
 
 	log.New("Waiting for %d nudge SMS routines to complete", len(*users)).Log()

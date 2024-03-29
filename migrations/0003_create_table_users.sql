@@ -8,10 +8,11 @@ CREATE TABLE users
     lastname          VARCHAR(100),
     password          VARCHAR(1024),
     email             VARCHAR(100),
-    timezone      VARCHAR(50) DEFAULT 'UTC',
+    timezone      VARCHAR(50)       DEFAULT 'UTC',
     account_status_id BIGINT             NOT NULL DEFAULT 1,
+    nudge_enabled BOOLEAN  NOT NULL DEFAULT TRUE,
     provider_code VARCHAR(128),
-    created_at        DATETIME           not null DEFAULT CURRENT_TIMESTAMP,
+    created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted_at        DATETIME                    DEFAULT null,
     updated_at        DATETIME                    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
@@ -22,7 +23,7 @@ INSERT INTO users (phone_number, phone_verified, firstname, lastname, email,
                    account_status_id)
 VALUES ('+18333595081', TRUE, 'System', 'User', '-@-', 2),
        ('+13607102634', TRUE, 'Deanne', 'Doucette', 'deannedoucette@gmail.com', 2),
-       ('+17072468797', TRUE, 'Dennis', 'Christo', 'bigplans777@gmail.com', 2),
+       ('+17072468797', TRUE, 'Brandon', 'Felton', 'Brandoncfelton@gmail.com', 2),
        ('+12533243071', TRUE, 'Kevin', 'Mesiab', 'kmesiab+equilibria_sms@gmail.com',
         2);
 
