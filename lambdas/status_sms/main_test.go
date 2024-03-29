@@ -17,7 +17,7 @@ func TestMain_HandleRequest(t *testing.T) {
 	require.NoError(t, err, "Could not run tests, could nto set up mock db")
 
 	mock.ExpectQuery("SELECT \\* FROM `messages` WHERE reference_id = ?").
-		WithArgs("SMa74e33ba8361485b4bfbb6ec285ceac5").
+		WithArgs("SMa74e33ba8361485b4bfbb6ec285ceac5", sqlmock.AnyArg()).
 		WillReturnRows(test.GenerateMockMessageRepositoryMessages())
 
 	mock.ExpectQuery("SELECT \\* FROM `conversations`").WithArgs(1).

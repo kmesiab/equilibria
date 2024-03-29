@@ -47,7 +47,7 @@ func TestTransactionRepository_FindByID(t *testing.T) {
 	repo := transaction.NewTransactionRepository(db)
 
 	mock.ExpectQuery("SELECT \\* FROM `transactions`").
-		WithArgs(1).WillReturnRows(
+		WithArgs(1, sqlmock.AnyArg()).WillReturnRows(
 		TestTransactionColumns.AddRow(
 			1, 1, 1,
 			TestTransaction.TransactionType,

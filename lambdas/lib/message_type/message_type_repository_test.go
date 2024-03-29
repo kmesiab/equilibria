@@ -4,6 +4,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/kmesiab/equilibria/lambdas/lib/message_type"
@@ -28,7 +29,7 @@ func TestMessageTypeRepository_FindByID(t *testing.T) {
 	var msgType = models.NewMessageTypeSMS()
 
 	mock.ExpectQuery("SELECT \\* FROM `message_types`").
-		WithArgs(msgType.ID).
+		WithArgs(msgType.ID, sqlmock.AnyArg()).
 		WillReturnRows(test.GenerateMockMessageType())
 
 	messageType, err := repo.FindByID(2)
@@ -52,7 +53,7 @@ func TestMessageTypeRepository_FindByName(t *testing.T) {
 	assert.NoError(t, err)
 
 	mock.ExpectQuery("SELECT \\* FROM `message_types`").
-		WithArgs("Email").WillReturnRows(test.GenerateMockMessageType())
+		WithArgs("Email", sqlmock.AnyArg()).WillReturnRows(test.GenerateMockMessageType())
 
 	repo := message_type.NewMessageTypeRepository(db)
 	messageType, err := repo.FindByName("Email")

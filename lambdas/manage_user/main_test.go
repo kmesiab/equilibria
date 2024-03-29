@@ -28,11 +28,12 @@ func TestManageUser_Post(t *testing.T) {
 	pwd := test.DefaultTestPassword
 
 	user := models.User{
-		Password:    &pwd,
-		Firstname:   test.DefaultTestUserFirstname,
-		Lastname:    test.DefaultTestUserLastname,
-		PhoneNumber: randomPhoneNumber,
-		Email:       test.DefaultTestEmail,
+		Password:     &pwd,
+		Firstname:    test.DefaultTestUserFirstname,
+		Lastname:     test.DefaultTestUserLastname,
+		PhoneNumber:  randomPhoneNumber,
+		Email:        test.DefaultTestEmail,
+		NudgeEnabled: true,
 	}
 
 	userBytes, _ := json.Marshal(user)
@@ -53,6 +54,8 @@ func TestManageUser_Post(t *testing.T) {
 		user.Lastname,
 		user.Email,
 		1,
+		user.ProviderCode,
+		user.NudgeEnabled,
 	).
 		WillReturnResult(
 			test.GenerateMockLastAffectedRow(),
@@ -61,7 +64,7 @@ func TestManageUser_Post(t *testing.T) {
 	mock.ExpectCommit()
 
 	mock.ExpectQuery("SELECT \\* FROM `account_statuses`").
-		WithArgs("Pending Activation").
+		WithArgs("Pending Activation", sqlmock.AnyArg()).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "name"}).
 			AddRow(1, "Pending Activation"))
 
@@ -115,7 +118,7 @@ func TestManageUser_Update(t *testing.T) {
 	mock.ExpectCommit()
 
 	mock.ExpectQuery("SELECT \\* FROM `users` WHERE `users`.`id`").
-		WithArgs(user.ID).
+		WithArgs(user.ID, sqlmock.AnyArg()).
 		WillReturnRows(test.GenerateMockUserRepositoryUser())
 
 	mock.ExpectQuery("SELECT \\* FROM `account_statuses`").
@@ -144,7 +147,7 @@ func TestManageUser_Get(t *testing.T) {
 
 	mock.ExpectQuery("SELECT \\* FROM `users`").
 		WillReturnRows(test.GenerateMockUserRepositoryUser()).
-		WithArgs(int64(1))
+		WithArgs(int64(1), sqlmock.AnyArg())
 
 	mock.ExpectQuery("SELECT \\* FROM `account_statuses`").WithArgs(1).
 		WillReturnRows(test.GenerateMockUserRepositoryUser())
@@ -184,7 +187,7 @@ func TestManageUser_Get404(t *testing.T) {
 	userID := "1"
 	mock.ExpectQuery("SELECT \\* FROM `users`").
 		WillReturnRows(sqlmock.NewRows([]string{})).
-		WithArgs(int64(1))
+		WithArgs(int64(1), sqlmock.AnyArg())
 
 	// Test the getUser function
 	request := events.APIGatewayProxyRequest{
