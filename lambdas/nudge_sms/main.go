@@ -23,7 +23,7 @@ import (
 	"github.com/kmesiab/equilibria/lambdas/models"
 )
 
-const MaxMemories = 25
+const MaxMemories = 75
 
 var TimeSinceLastMessage time.Time
 
@@ -115,7 +115,7 @@ func (h *NudgeSMSLambdaHandler) Nudge(user *models.User, wg *sync.WaitGroup) err
 	memoryDumpString := MemoriesToString(memories)
 	var promptModifier string
 
-	if len(memoryDumpString) < 20 {
+	if len(memoryDumpString) < 10 {
 
 		log.New("Using new user prompt modifier").AddUser(user).Log()
 
@@ -341,7 +341,7 @@ func main() {
 		return
 	}
 
-	TimeSinceLastMessage = time.Now().UTC().Add(time.Hour * -4)
+	TimeSinceLastMessage = time.Now().UTC().Add(time.Hour * -6)
 
 	usrSvc := user.NewUserService(
 		user.NewUserRepository(database),
