@@ -27,10 +27,10 @@ import (
 const maxMemories = 60
 
 // How many immediately previous messages to include in the prompt
-const maxLastFewMessages = 10
+const maxLastFewMessages = 6
 
 // How many memories you have to have before we consider you an 'existing'
-// user, so the model treats you like it knows you well.
+// user, so the model treats you like it knowInUTCs you well.
 const newUserMemoryCount = 15
 
 type SendSMSLambdaHandler struct {
@@ -47,11 +47,10 @@ type SendSMSLambdaHandler struct {
 func (h *SendSMSLambdaHandler) HandleRequest(sqsEvent events.SQSEvent) {
 
 	var (
-		err error
-		now = time.Now()
-		msg models.Message
+		err      error
+		nowInUTC = time.Now().UTC()
 
-		formattedDate = now.Format("January 2, 2006 3:04pm")
+		msg models.Message
 	)
 
 	if err = ValidateEvent(&sqsEvent); err != nil {
@@ -112,6 +111,18 @@ func (h *SendSMSLambdaHandler) HandleRequest(sqsEvent events.SQSEvent) {
 		return
 	}
 
+	pst, err := time.LoadLocation("America/Los_Angeles") // PST is often represented by the America/Los_Angeles timezone.
+
+	if err != nil {
+		log.New("Error loading PST location: %s", err.Error())
+
+		return
+	}
+
+	// Convert date to PST.  In the future we will use the user's timezone
+	pstDate := nowInUTC.In(pst)
+	formattedDate := pstDate.Format("January 2, 2006 3:04pm")
+
 	prompt := fmt.Sprintf(ConditioningPrompt, promptModifier, formattedDate, recipient.Firstname)
 
 	log.New("Generated Prompt").Add("prompt", prompt).
@@ -134,7 +145,7 @@ func (h *SendSMSLambdaHandler) HandleRequest(sqsEvent events.SQSEvent) {
 	newMessage.ConversationID = msg.ConversationID
 	newMessage.FromUserID = models.GetSystemUser().ID
 	newMessage.ToUserID = recipient.ID
-	newMessage.SentAt = &now
+	newMessage.SentAt = &nowInUTC
 	newMessage.MessageStatus = models.NewMessageStatusSending()
 
 	newMessage.Body = completion

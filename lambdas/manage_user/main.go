@@ -208,7 +208,6 @@ func (h *ManageUserLambdaHandler) Update(request events.APIGatewayProxyRequest) 
 	}
 
 	msg := log.New("User has been updated and token refreshed").
-		AddUser(updatedUser).
 		Add("token", token).
 		Write()
 
