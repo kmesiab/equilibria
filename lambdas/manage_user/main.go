@@ -88,8 +88,10 @@ func (h *ManageUserLambdaHandler) Create(request events.APIGatewayProxyRequest) 
 			"Password must be at least 8 characters", nil, http.StatusBadRequest)
 	}
 
+	nudgeEnabled := true
 	// Pending activation
 	newUser.AccountStatusID = 1
+	newUser.NudgeEnabled = &nudgeEnabled
 
 	hashedPassword, err := hasher.HashPassword(*newUser.Password)
 
@@ -178,6 +180,8 @@ func (h *ManageUserLambdaHandler) Update(request events.APIGatewayProxyRequest) 
 				err, http.StatusInternalServerError)
 		}
 	}
+
+	log.New("Updating user %d", inputUser.ID).AddUser(inputUser).Log()
 
 	err = h.UserService.Update(inputUser)
 
