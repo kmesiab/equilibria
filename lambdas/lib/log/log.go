@@ -56,7 +56,7 @@ func (r *Log) AddUser(user *models.User) *Log {
 	r.Fields["phone_verified"] = strconv.FormatBool(user.PhoneVerified)
 	r.Fields["account_status"] = user.AccountStatus.Name
 	r.Fields["account_status_id"] = strconv.FormatInt(user.AccountStatusID, 10)
-	r.Fields["nudge_enabled"] = strconv.FormatBool(user.NudgeEnabled)
+	r.Fields["nudge_enabled"] = strconv.FormatBool(*user.NudgeEnabled)
 	r.Fields["provider_code"] = user.ProviderCode
 
 	return r

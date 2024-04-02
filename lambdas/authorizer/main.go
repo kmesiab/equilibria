@@ -54,6 +54,8 @@ func (h AuthorizerLambdaHandler) HandleRequest(request events.APIGatewayCustomAu
 		Add("lastname", claims.Lastname).
 		Add("firstname", claims.Firstname).
 		Add("email", claims.Email).
+		Add("nudge_enabled", log.FormatBool(claims.NudgeEnabled)).
+		Add("provider_code", claims.ProviderCode).
 		Add("account_status", claims.AccountStatus).
 		Add("phone_verified", log.FormatBool(claims.PhoneVerified)).
 		Add("jwt_issued_at", strconv.FormatInt(claims.IssuedAt, 10)).

@@ -120,6 +120,8 @@ func GenerateMockUserRepositoryUser() *sqlmock.Rows {
 			"lastname",
 			"email",
 			"account_status_id",
+			"provider_code",
+			"nudge_enabled",
 			"created_at",
 			"deleted_at",
 			"updated_at",
@@ -136,6 +138,8 @@ func GenerateMockUserRepositoryUser() *sqlmock.Rows {
 		"doe",               // lastname
 		"janedoe@email.com", // email
 		1,                   // account_status_id
+		"CODE",              // provider_code
+		true,                // nudge_enabled
 		now,                 // created_at
 		now,                 // updated_at
 		nil,                 // deleted_at

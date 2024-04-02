@@ -24,6 +24,7 @@ func TestUserRepository_Create(t *testing.T) {
 	repo := user.NewUserRepository(db)
 
 	pwd := test.DefaultTestPassword
+	nudgeEnabled := true
 
 	newUser := models.User{
 		PhoneNumber:     test.DefaultTestPhoneNumber,
@@ -33,7 +34,7 @@ func TestUserRepository_Create(t *testing.T) {
 		Email:           test.DefaultTestEmail,
 		Password:        &pwd,
 		AccountStatusID: 1,
-		NudgeEnabled:    true,
+		NudgeEnabled:    &nudgeEnabled,
 		ProviderCode:    "system",
 	}
 

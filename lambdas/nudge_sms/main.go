@@ -63,7 +63,9 @@ func (h *NudgeSMSLambdaHandler) HandleRequest(e events.EventBridgeEvent) error {
 
 	for _, u := range *users {
 
-		if !u.NudgeEnabled {
+		if !*u.NudgeEnabled {
+
+			log.New("User %s is not nudging", u.PhoneNumber).Log()
 
 			continue
 		}

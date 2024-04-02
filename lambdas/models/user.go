@@ -12,8 +12,8 @@ type User struct {
 	Lastname        string        `gorm:"type:varchar(100)" json:"lastname"`
 	Email           string        `gorm:"type:varchar(100)" json:"email"`
 	AccountStatusID int64         `gorm:"not null;" json:"account_status_id"`
+	NudgeEnabled    *bool         `gorm:"not null" json:"nudge_enabled"`
 	ProviderCode    string        `gorm:"type:varchar(128)" json:"provider_code"`
-	NudgeEnabled    bool          `gorm:"not null;default:true" json:"nudge_enabled"`
 }
 
 func (u *User) IsValid() bool {
@@ -25,7 +25,7 @@ func (u *User) IsValid() bool {
 }
 
 func (u *User) BeforeUpdate(tx *gorm.DB) (err error) {
-	// omit the data field if it is empty
+
 	if u.AccountStatusID == 0 {
 		tx.Statement.Omit("account_status_id")
 	}
@@ -38,6 +38,7 @@ func (u *User) BeforeUpdate(tx *gorm.DB) (err error) {
 }
 
 func GetSystemUser() *User {
+	nudgeEnabled := false
 	return &User{
 		ID:              1,
 		Firstname:       "System",
@@ -47,6 +48,6 @@ func GetSystemUser() *User {
 		AccountStatusID: 2,
 		PhoneVerified:   true,
 		ProviderCode:    "system",
-		NudgeEnabled:    false,
+		NudgeEnabled:    &nudgeEnabled,
 	}
 }

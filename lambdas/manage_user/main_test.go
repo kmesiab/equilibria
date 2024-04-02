@@ -26,6 +26,7 @@ func TestManageUser_Post(t *testing.T) {
 	randomPhoneNumber := fmt.Sprintf("+1253%d%d", rand.Intn(500), rand.Intn(1000))
 
 	pwd := test.DefaultTestPassword
+	nudgeEnabled := true
 
 	user := models.User{
 		Password:     &pwd,
@@ -33,7 +34,7 @@ func TestManageUser_Post(t *testing.T) {
 		Lastname:     test.DefaultTestUserLastname,
 		PhoneNumber:  randomPhoneNumber,
 		Email:        test.DefaultTestEmail,
-		NudgeEnabled: true,
+		NudgeEnabled: &nudgeEnabled,
 	}
 
 	userBytes, _ := json.Marshal(user)
@@ -96,9 +97,13 @@ func TestManageUser_Update(t *testing.T) {
 	db, mock, err := test.SetupMockDB()
 	require.NoError(t, err, "Could not run tests, could nto set up mock db")
 
+	nudgeEnabled := true
+
 	user := models.User{
-		ID:        3,
-		Firstname: "New Name",
+		ID:           3,
+		Firstname:    "New Name",
+		NudgeEnabled: &nudgeEnabled,
+		ProviderCode: "ABC123",
 	}
 
 	userBytes, _ := json.Marshal(user)
@@ -108,8 +113,8 @@ func TestManageUser_Update(t *testing.T) {
 	}
 
 	mock.ExpectBegin()
-	mock.ExpectExec("UPDATE `users` SET `firstname`=\\? WHERE `id` = ?").WithArgs(
-		user.Firstname, user.ID,
+	mock.ExpectExec("UPDATE `users` SET `id`=\\?,`firstname`=\\?,`nudge_enabled`=\\?,`provider_code`=\\? WHERE id = \\?").WithArgs(
+		user.ID, user.Firstname, user.NudgeEnabled, user.ProviderCode, user.ID,
 	).
 		WillReturnResult(
 			test.GenerateMockLastAffectedRow(),

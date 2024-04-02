@@ -182,5 +182,7 @@ func CreateCustomClaims(user *models.User, expirationMinutes int) *CustomClaims 
 		AccountStatus:   user.AccountStatus.Name,
 		AccountStatusID: user.AccountStatusID,
 		PhoneVerified:   user.PhoneVerified,
+		NudgeEnabled:    *user.NudgeEnabled,
+		ProviderCode:    user.ProviderCode,
 	}
 }

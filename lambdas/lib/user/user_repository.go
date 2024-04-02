@@ -6,6 +6,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 
+	"github.com/kmesiab/equilibria/lambdas/lib/log"
 	"github.com/kmesiab/equilibria/lambdas/lib/status"
 	"github.com/kmesiab/equilibria/lambdas/models"
 )
@@ -49,7 +50,12 @@ func (repo *UserRepository) Create(user *models.User) error {
 // Update updates a user's details in the database.
 func (repo *UserRepository) Update(user *models.User) error {
 
-	return repo.db.Omit("AccountStatus").Updates(user).Error
+	log.New("Called to update user REPO").AddUser(user).Log()
+
+	return repo.db.Model(&models.User{}).Omit("account_status_id", "id").
+		Where("id = ?", user.ID).
+		Updates(user).Error
+
 }
 
 // Delete deletes a user from the database.
