@@ -82,7 +82,7 @@ func (h *NudgeSMSLambdaHandler) HandleRequest(e events.EventBridgeEvent) error {
 				return
 			}
 
-			err := h.Nudge(u, wg)
+			err := h.Nudge(u)
 
 			// Nudge failed for some reason
 			if err != nil {
@@ -101,9 +101,7 @@ func (h *NudgeSMSLambdaHandler) HandleRequest(e events.EventBridgeEvent) error {
 	return nil
 }
 
-func (h *NudgeSMSLambdaHandler) Nudge(user *models.User, wg *sync.WaitGroup) error {
-
-	defer wg.Done()
+func (h *NudgeSMSLambdaHandler) Nudge(user *models.User) error {
 
 	memories, err := h.GetMemories(user)
 
@@ -117,7 +115,7 @@ func (h *NudgeSMSLambdaHandler) Nudge(user *models.User, wg *sync.WaitGroup) err
 	memoryDumpString := MemoriesToString(memories)
 	var promptModifier string
 
-	if len(memoryDumpString) < 10 {
+	if len(*memories) < 6 {
 
 		log.New("Using new user prompt modifier").AddUser(user).Log()
 
