@@ -10,5 +10,13 @@ gathering key insights.`
 
 const NudgePromptNewUserModifier = `
 Act as if we're still getting to know each other. Seek to gain trust and build 
-a relationship.
+a relationship and get to know me. Help me understand how my mental health journey
+works. If you haven't already, explain the ways you are able to help using your vast 
+training data on top mental health practices.
+
+Help me learn to help you do the best job for my mental health in terms of necessary 
+information.
+
+Gather information that will help inform your continued care plan with me.  
+If we have not spoken before, do not pretend like we have.
 `
