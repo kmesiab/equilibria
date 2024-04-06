@@ -24,6 +24,24 @@ func (u *User) IsValid() bool {
 		u.Lastname != ""
 }
 
+func (u *User) NudgesEnabled() bool {
+	if u.NudgeEnabled == nil {
+
+		return false
+	}
+	return *u.NudgeEnabled
+}
+
+func (u *User) EnableNudges() {
+	nudgeEnabled := true
+	u.NudgeEnabled = &nudgeEnabled
+}
+
+func (u *User) DisableNudges() {
+	nudgeEnabled := false
+	u.NudgeEnabled = &nudgeEnabled
+}
+
 func (u *User) BeforeUpdate(tx *gorm.DB) (err error) {
 
 	if u.AccountStatusID == 0 {

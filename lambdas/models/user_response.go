@@ -24,7 +24,7 @@ func MakeUserResponseFromUser(user *User) *UserResponse {
 		Status:        user.AccountStatus.Name,
 		StatusID:      user.AccountStatusID,
 		PhoneVerified: user.PhoneVerified,
-		NudgeEnabled:  *user.NudgeEnabled,
+		NudgeEnabled:  user.NudgesEnabled(),
 		ProviderCode:  user.ProviderCode,
 	}
 }

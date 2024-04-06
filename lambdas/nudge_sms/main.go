@@ -23,7 +23,11 @@ import (
 	"github.com/kmesiab/equilibria/lambdas/models"
 )
 
-const MaxMemories = 75
+const (
+	MaxNewMemories                        = 10
+	MaxOldMemories                        = 100
+	NumMemoriesToBeConsideredExistingUser = 4
+)
 
 var TimeSinceLastMessage time.Time
 
@@ -34,7 +38,8 @@ type NudgeSMSLambdaHandler struct {
 	MemoryService     *message.MemoryService
 	CompletionService ai.CompletionServiceInterface
 
-	MaxMemories            int
+	MaxNewMemories         int
+	MaxOldMemories         int
 	NudgeIfNoMessagesSince time.Time
 }
 
@@ -63,7 +68,7 @@ func (h *NudgeSMSLambdaHandler) HandleRequest(e events.EventBridgeEvent) error {
 
 	for _, u := range *users {
 
-		if !*u.NudgeEnabled {
+		if !u.NudgesEnabled() {
 
 			log.New("User %s is not nudging", u.PhoneNumber).Log()
 
@@ -113,10 +118,17 @@ func (h *NudgeSMSLambdaHandler) Nudge(user *models.User) error {
 	}
 
 	memoryDumpString := MemoriesToString(memories)
+
+	// The number of messages I've sent to the system.
+	myMemories := utils.FilterSlice(*memories, func(m models.Message) bool {
+		return m.FromUserID != models.GetSystemUser().ID
+	})
+
 	var promptModifier string
 
-	if len(*memories) < 6 {
+	log.New("Total User Texts: %d", len(myMemories)).Log()
 
+	if len(myMemories) < NumMemoriesToBeConsideredExistingUser {
 		log.New("Using new user prompt modifier").AddUser(user).Log()
 
 		promptModifier = NudgePromptNewUserModifier
@@ -126,7 +138,7 @@ func (h *NudgeSMSLambdaHandler) Nudge(user *models.User) error {
 		promptModifier = NudgePromptExistingUserModifier
 	}
 
-	prompt := fmt.Sprintf(NudgePrompt, promptModifier, user.Firstname, user.Firstname)
+	prompt := fmt.Sprintf(NudgePrompt, promptModifier, user.Firstname)
 
 	log.New("Attaching %d memories", len(*memories)).
 		Add("memory_dump", memoryDumpString).
@@ -215,7 +227,7 @@ func (h *NudgeSMSLambdaHandler) Nudge(user *models.User) error {
 
 func (h *NudgeSMSLambdaHandler) GetMemories(user *models.User) (*[]models.Message, error) {
 
-	lastFewMemories, err := h.MemoryService.GetLastNMessagePairs(user, h.MaxMemories)
+	lastFewMemories, err := h.MemoryService.GetLastNMessagePairs(user, h.MaxNewMemories)
 
 	if err != nil {
 		log.New(
@@ -225,7 +237,7 @@ func (h *NudgeSMSLambdaHandler) GetMemories(user *models.User) (*[]models.Messag
 		return nil, err
 	}
 
-	aFewOlderMemories, err := h.MemoryService.GetRandomMessagePairs(user, h.MaxMemories)
+	aFewOlderMemories, err := h.MemoryService.GetRandomMessagePairs(user, h.MaxOldMemories)
 
 	if err != nil {
 		log.New(
@@ -348,16 +360,19 @@ func main() {
 	)
 
 	memSvc := message.NewMemoryService(
-		message.NewMessageRepository(database), MaxMemories,
+		message.NewMessageRepository(database), MaxNewMemories+MaxOldMemories,
 	)
 
-	llmSvc := &ai.OpenAICompletionService{}
+	llmSvc := &ai.OpenAICompletionService{
+		RemoveEmojis: false,
+	}
 
 	handler := &NudgeSMSLambdaHandler{
 		UserService:            usrSvc,
 		MemoryService:          memSvc,
 		CompletionService:      llmSvc,
-		MaxMemories:            MaxMemories,
+		MaxNewMemories:         MaxNewMemories,
+		MaxOldMemories:         MaxOldMemories,
 		NudgeIfNoMessagesSince: TimeSinceLastMessage,
 	}
 
