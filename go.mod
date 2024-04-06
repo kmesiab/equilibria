@@ -10,6 +10,7 @@ require (
 	github.com/aws/aws-sdk-go v1.50.35
 	github.com/aws/aws-sdk-go-v2/config v1.27.4
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.31.1
+	github.com/forPelevin/gomoji v1.2.0
 	github.com/go-resty/resty/v2 v2.11.0
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/golang-jwt/jwt v3.2.2+incompatible
@@ -42,6 +43,7 @@ require (
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/rivo/uniseg v0.4.3 // indirect
 	golang.org/x/net v0.21.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

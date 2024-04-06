@@ -4,10 +4,13 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 
+	"github.com/forPelevin/gomoji"
 	"github.com/sashabaranov/go-openai"
 
 	"github.com/kmesiab/equilibria/lambdas/lib/config"
+	"github.com/kmesiab/equilibria/lambdas/lib/encoding"
 	"github.com/kmesiab/equilibria/lambdas/lib/log"
 	"github.com/kmesiab/equilibria/lambdas/models"
 )
@@ -15,11 +18,35 @@ import (
 const (
 	CompletionTemperature  = 0.93
 	CompletionServiceModel = openai.GPT4Turbo0125
-	CompletionMaxTokens    = 1200
-	FrequencyPenalty       = .2
+	CompletionMaxTokens    = 800
+	FrequencyPenalty       = .6
 )
 
-type OpenAICompletionService struct{}
+type OpenAICompletionService struct {
+	RemoveEmojis bool
+}
+
+func (o *OpenAICompletionService) CleanCompletionText(completion string) string {
+
+	if !encoding.IsGSMEncoded(completion) {
+
+		log.New("Detected non GSM encoded completion: %s", completion)
+	}
+
+	completion = strings.Replace(completion, "’", "'", -1)
+	completion = strings.Replace(completion, "—", "-", -1)
+	completion = strings.Replace(completion, "! ?", "!", -1)
+
+	if o.RemoveEmojis {
+		completion = gomoji.RemoveEmojis(completion)
+
+		log.New("Removed emojis from completion: %s", completion)
+	}
+
+	completion = strings.TrimSpace(completion)
+
+	return completion
+}
 
 func (o *OpenAICompletionService) GetCompletion(
 	message, prompt string, memories *[]models.Message,
