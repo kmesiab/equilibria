@@ -24,7 +24,6 @@ func TestUserRepository_Create(t *testing.T) {
 	repo := user.NewUserRepository(db)
 
 	pwd := test.DefaultTestPassword
-	nudgeEnabled := true
 
 	newUser := models.User{
 		PhoneNumber:     test.DefaultTestPhoneNumber,
@@ -34,9 +33,10 @@ func TestUserRepository_Create(t *testing.T) {
 		Email:           test.DefaultTestEmail,
 		Password:        &pwd,
 		AccountStatusID: 1,
-		NudgeEnabled:    &nudgeEnabled,
 		ProviderCode:    "system",
 	}
+
+	newUser.EnableNudges()
 
 	mock.ExpectBegin()
 	mock.ExpectExec("INSERT INTO `users`").
@@ -48,8 +48,8 @@ func TestUserRepository_Create(t *testing.T) {
 			newUser.Lastname,
 			newUser.Email,
 			1,
+			newUser.NudgesEnabled(),
 			newUser.ProviderCode,
-			newUser.NudgeEnabled,
 		).WillReturnResult(test.GenerateMockLastAffectedRow())
 	mock.ExpectCommit()
 
@@ -75,9 +75,13 @@ func TestUserRepository_Update(t *testing.T) {
 		Email: "john@example.com",
 	}
 
+	newUser.EnableNudges()
+
 	mock.ExpectBegin()
 	mock.ExpectExec("UPDATE `users` SET").
 		WithArgs(
+			sqlmock.AnyArg(),
+			sqlmock.AnyArg(),
 			sqlmock.AnyArg(),
 			sqlmock.AnyArg(),
 		).WillReturnResult(test.GenerateMockLastAffectedRow())
