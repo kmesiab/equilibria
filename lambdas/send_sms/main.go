@@ -24,14 +24,14 @@ import (
 )
 
 // How many past memories to include in the prompt
-const maxMemories = 60
+const maxMemories = 100
 
 // How many immediately previous messages to include in the prompt
-const maxLastFewMessages = 6
+const maxLastFewMessages = 12
 
 // How many memories you have to have before we consider you an 'existing'
 // user, so the model treats you like it knowInUTCs you well.
-const newUserMemoryCount = 15
+const newUserMemoryCount = 5
 
 type SendSMSLambdaHandler struct {
 	lib.LambdaHandler
@@ -86,7 +86,7 @@ func (h *SendSMSLambdaHandler) HandleRequest(sqsEvent events.SQSEvent) {
 		return
 	}
 
-	log.New("Preparing a response for %s", recipient.PhoneNumber).
+	log.New("Starting response for %s", recipient.PhoneNumber).
 		AddUser(recipient).AddSQSEvent(&event).AddMessage(&msg).Log()
 
 	// Get the memories for the user
@@ -114,7 +114,7 @@ func (h *SendSMSLambdaHandler) HandleRequest(sqsEvent events.SQSEvent) {
 	pst, err := time.LoadLocation("America/Los_Angeles") // PST is often represented by the America/Los_Angeles timezone.
 
 	if err != nil {
-		log.New("Error loading PST location: %s", err.Error())
+		log.New("Error loading PST location: %s. Exiting.", err.Error())
 
 		return
 	}
@@ -126,11 +126,15 @@ func (h *SendSMSLambdaHandler) HandleRequest(sqsEvent events.SQSEvent) {
 	prompt := fmt.Sprintf(ConditioningPrompt, promptModifier, formattedDate, recipient.Firstname)
 
 	log.New("Generated Prompt").Add("prompt", prompt).
-		AddUser(recipient).AddSQSEvent(&event).AddMessage(&msg).
-		Add("memory_count", strconv.Itoa(len(memories))).Log()
+		AddUser(recipient).AddMessage(&msg).
+		Add("memory_count", strconv.Itoa(len(memories))).
+		Log()
 
 	// Send the prompt for completion
 	completion, err := h.CompletionService.GetCompletion(msg.Body, prompt, &memories)
+
+	// Strip some non GSM characters from the outbound message
+	completion = h.CompletionService.CleanCompletionText(completion)
 
 	if err != nil {
 		log.New("Error getting completion").Add("prompt", prompt).
@@ -199,6 +203,19 @@ func (h *SendSMSLambdaHandler) HandleRequest(sqsEvent events.SQSEvent) {
 		AddSmsResponse(smsResponse).
 		Log()
 
+	defer func() {
+
+		if r := recover(); r != nil {
+
+			log.New("Panic while trying to process emotions: %v", r)
+		}
+
+		h.ProcessEmotions(recipient, msg, event)
+	}()
+}
+
+func (h *SendSMSLambdaHandler) ProcessEmotions(recipient *models.User, msg models.Message, event events.SQSMessage) {
+
 	scores, err := h.NRCLexService.ProcessMessage(recipient, &msg)
 
 	if err != nil {
@@ -232,7 +249,6 @@ func (h *SendSMSLambdaHandler) HandleRequest(sqsEvent events.SQSEvent) {
 		AddError(err).
 		AddMessage(&msg).
 		Log()
-
 }
 
 func (h *SendSMSLambdaHandler) GetMemories(recipient *models.User, event events.SQSMessage, msg models.Message) ([]models.Message, error) {
@@ -325,9 +341,11 @@ func main() {
 		MaxMemories:        maxMemories,
 		MaxLastFewMemories: maxLastFewMessages,
 
-		CompletionService: &ai.OpenAICompletionService{},
-		MemoryService:     memoryService,
-		NRCLexService:     emotions.NewNRCLexService(nrcClient, nrclexRepo),
+		CompletionService: &ai.OpenAICompletionService{
+			RemoveEmojis: true,
+		},
+		MemoryService: memoryService,
+		NRCLexService: emotions.NewNRCLexService(nrcClient, nrclexRepo),
 	}
 
 	handler.Init(database)

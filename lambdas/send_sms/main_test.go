@@ -25,7 +25,9 @@ func TestHandleRequest_NoBody(t *testing.T) {
 	require.NoError(t, err, "Could not run tests, could nto set up mock db")
 
 	handler := &SendSMSLambdaHandler{
-		CompletionService: &ai.OpenAICompletionService{},
+		CompletionService: &ai.OpenAICompletionService{
+			RemoveEmojis: false,
+		},
 		MemoryService: &message.MemoryService{
 			MessageService: message.NewMessageService(message.NewMessageRepository(db)),
 		},
@@ -47,13 +49,15 @@ func TestHandleRequest(t *testing.T) {
 
 	mock.ExpectQuery("SELECT \\* FROM `users` WHERE `users`.`id`").
 		WithArgs(3, sqlmock.AnyArg()).
-		WillReturnRows(sqlmock.NewRows([]string{"id", "email"}).
-			AddRow(1, test.DefaultTestEmail))
+		WillReturnRows(sqlmock.NewRows([]string{"id", "email", "nudge_enabled"}).
+			AddRow(1, test.DefaultTestEmail, true))
 
 	require.NoError(t, err, "Could not run tests, could nto set up mock db")
 
 	handler := &SendSMSLambdaHandler{
-		CompletionService: &ai.OpenAICompletionService{},
+		CompletionService: &ai.OpenAICompletionService{
+			RemoveEmojis: false,
+		},
 		MemoryService: &message.MemoryService{
 			MessageService: message.NewMessageService(message.NewMessageRepository(db)),
 		},
