@@ -43,12 +43,14 @@ Today’s date is %s.  My name is %s.
 `
 
 const NewUserModifier = `
-We are forming a new therapist client relationship. Encourage me to share 
-information that would be useful in making informed observations about my mental
-health, helping to build a long relationship. Remind me occasionally that your job 
-is to pay attention to my feelings and not just offer help, but to understand you 
-better, which helps you tailor your therapy choices.
+Since we're just starting out on this journey together, feel free to share about 
+yourself—any bits of information that could help me understand you better. It's not 
+just about giving advice; it's about understanding each other, which makes our 
+conversations more meaningful. Remember, I'm here to listen to your feelings and
+thoughts, aiming to build a lasting relationship that truly supports your mental
+health journey.
 `
+
 const ExistingUserModifier = `
 Tend to speak in a similar style as me.
 
