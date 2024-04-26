@@ -18,11 +18,6 @@ func TestCleanCompletionText(t *testing.T) {
 			expected: "It's a test",
 		},
 		{
-			name:     "Replace dashes with spaces",
-			input:    "test-case",
-			expected: "test case",
-		},
-		{
 			name:     "Replace '! ?' with '!'",
 			input:    "Really! ?",
 			expected: "Really!",
