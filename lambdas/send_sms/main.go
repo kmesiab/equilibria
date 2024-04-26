@@ -24,7 +24,7 @@ import (
 )
 
 // How many past memories to include in the prompt
-const maxMemories = 100
+const maxMemories = 240
 
 // How many immediately previous messages to include in the prompt
 const maxLastFewMessages = 12
@@ -328,7 +328,7 @@ func main() {
 	}
 
 	memoryService := message.NewMemoryService(
-		message.NewMessageRepository(database), maxMemories,
+		message.NewMessageRepository(database), maxMemories+maxLastFewMessages,
 	)
 
 	nrclexRepo := &nrclex.Repository{DB: database}
@@ -338,11 +338,11 @@ func main() {
 
 	handler := &SendSMSLambdaHandler{
 
-		MaxMemories:        maxMemories,
+		MaxMemories:        maxMemories + maxLastFewMessages,
 		MaxLastFewMemories: maxLastFewMessages,
 
 		CompletionService: &ai.OpenAICompletionService{
-			RemoveEmojis: true,
+			RemoveEmojis: false,
 		},
 		MemoryService: memoryService,
 		NRCLexService: emotions.NewNRCLexService(nrcClient, nrclexRepo),
