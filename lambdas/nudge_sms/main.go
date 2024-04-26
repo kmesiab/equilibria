@@ -24,9 +24,10 @@ import (
 )
 
 const (
-	MaxNewMemories                        = 10
-	MaxOldMemories                        = 100
-	NumMemoriesToBeConsideredExistingUser = 4
+	HoursSinceLastNudge                   = 7
+	MaxNewMemories                        = 20
+	MaxOldMemories                        = 15
+	NumMemoriesToBeConsideredExistingUser = 3
 )
 
 var TimeSinceLastMessage time.Time
@@ -109,6 +110,8 @@ func (h *NudgeSMSLambdaHandler) HandleRequest(e events.EventBridgeEvent) error {
 func (h *NudgeSMSLambdaHandler) Nudge(user *models.User) error {
 
 	memories, err := h.GetMemories(user)
+
+	slices.Reverse(*memories)
 
 	if err != nil {
 		log.New("Error retrieving memories for user %s", user.PhoneNumber).
@@ -248,7 +251,6 @@ func (h *NudgeSMSLambdaHandler) GetMemories(user *models.User) (*[]models.Messag
 	}
 
 	memories := append(*lastFewMemories, *aFewOlderMemories...)
-	slices.Reverse(memories)
 
 	return &memories, nil
 }
@@ -353,7 +355,7 @@ func main() {
 		return
 	}
 
-	TimeSinceLastMessage = time.Now().UTC().Add(time.Hour * -6)
+	TimeSinceLastMessage = time.Now().UTC().Add(time.Hour * -HoursSinceLastNudge)
 
 	usrSvc := user.NewUserService(
 		user.NewUserRepository(database),
