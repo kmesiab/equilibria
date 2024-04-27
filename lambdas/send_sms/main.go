@@ -24,7 +24,7 @@ import (
 )
 
 // How many past memories to include in the prompt
-const maxMemories = 240
+const maxMemories = 120
 
 // How many immediately previous messages to include in the prompt
 const maxLastFewMessages = 12
