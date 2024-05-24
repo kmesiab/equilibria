@@ -13,14 +13,12 @@ const (
 
 type MemoryService struct {
 	*MessageService
-
-	MaxMemories int
 }
 
-func NewMemoryService(repo *Repository, maxMemories int) *MemoryService {
+func NewMemoryService(repo *Repository) *MemoryService {
 
 	svc := NewMessageService(repo)
-	return &MemoryService{MessageService: svc, MaxMemories: maxMemories}
+	return &MemoryService{MessageService: svc}
 }
 
 // GeneratePrompt generates a prompt from the user's previous messages.
@@ -35,16 +33,7 @@ func (m *MemoryService) GeneratePrompt(user *models.User) (string, error) {
 		return "", err
 	}
 
-	var recentMemories []models.Message
-
-	// Take only the last maxMemories messages
-	if len(*messages) > m.MaxMemories {
-		recentMemories = (*messages)[len(*messages)-m.MaxMemories:]
-	} else {
-		recentMemories = *messages
-	}
-
-	for _, message := range recentMemories {
+	for _, message := range *messages {
 		prompt += fmt.Sprintf(promptLineFmt,
 			message.CreatedAt,
 			message.From.Firstname,
@@ -57,9 +46,9 @@ func (m *MemoryService) GeneratePrompt(user *models.User) (string, error) {
 
 // GetMemories returns a slice of Messages for this user, representing all
 // memories for all conversations between this user and the service.
-func (m *MemoryService) GetMemories(user *models.User) (*[]models.Message, error) {
+func (m *MemoryService) GetMemories(user *models.User, limit int) (*[]models.Message, error) {
 
-	return m.GetRandomMessagePairs(user, m.MaxMemories)
+	return m.GetRandomMessagePairs(user, limit)
 }
 
 func (m *MemoryService) GetLastNMessagePairs(user *models.User, size int) (*[]models.Message, error) {

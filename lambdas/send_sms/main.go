@@ -23,14 +23,15 @@ import (
 	"github.com/kmesiab/equilibria/lambdas/models"
 )
 
-// How many past memories to include in the prompt
-const maxMemories = 120
+// How many memories to include in the prompt
+// Turns into 75 random user messages?
+const maxMemories = 1
 
 // How many immediately previous messages to include in the prompt
-const maxLastFewMessages = 12
+const maxLastFewMessages = 250
 
 // How many memories you have to have before we consider you an 'existing'
-// user, so the model treats you like it knowInUTCs you well.
+// user, so the model treats you like it knows you well.
 const newUserMemoryCount = 5
 
 type SendSMSLambdaHandler struct {
@@ -207,7 +208,7 @@ func (h *SendSMSLambdaHandler) HandleRequest(sqsEvent events.SQSEvent) {
 
 		if r := recover(); r != nil {
 
-			log.New("Panic while trying to process emotions: %v", r)
+			log.New("Panic while trying to process emotions: %v", r).Log()
 		}
 
 		h.ProcessEmotions(recipient, msg, event)
@@ -264,6 +265,10 @@ func (h *SendSMSLambdaHandler) GetMemories(recipient *models.User, event events.
 
 	aFewOlderMemories, err := h.MemoryService.GetRandomMessagePairs(recipient, h.MaxMemories)
 
+	myOldMemories := utils.FilterSlice(*aFewOlderMemories, func(m models.Message) bool {
+		return m.FromUserID != models.GetSystemUser().ID
+	})
+
 	if err != nil {
 		log.New(
 			"Error retrieving a few older memories for user %s",
@@ -272,7 +277,7 @@ func (h *SendSMSLambdaHandler) GetMemories(recipient *models.User, event events.
 		return nil, err
 	}
 
-	memories := append(*lastFewMemories, *aFewOlderMemories...)
+	memories := append(*lastFewMemories, myOldMemories...)
 	slices.Reverse(memories)
 
 	return memories, nil
@@ -328,7 +333,7 @@ func main() {
 	}
 
 	memoryService := message.NewMemoryService(
-		message.NewMessageRepository(database), maxMemories+maxLastFewMessages,
+		message.NewMessageRepository(database),
 	)
 
 	nrclexRepo := &nrclex.Repository{DB: database}

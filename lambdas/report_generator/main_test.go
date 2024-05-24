@@ -21,7 +21,6 @@ func TestHandleRequestMethodNotAllowed(t *testing.T) {
 
 	memSvc := message.NewMemoryService(
 		message.NewMessageRepository(db),
-		report_generator.MaxOldMemories+report_generator.MaxNewMemories,
 	)
 
 	llmSvc := &ai.OpenAICompletionService{
