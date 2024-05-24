@@ -11,3 +11,8 @@ export TF_VAR_sms_queue_url=$SMS_QUEUE_URL
 export TF_VAR_twilio_verify_service_sid=$TWILIO_VERIFY_SERVICE_SID
 export TF_VAR_twilio_status_callback_url=$TWILIO_STATUS_CALLBACK_URL
 export TF_VAR_open_ai_api_key=$OPENAI_API_KEY
+
+export TF_VAR_chat_model_name=$CHAT_MODEL_NAME
+export TF_VAR_chat_model_temperature=$CHAT_MODEL_TEMPERATURE
+export TF_VAR_chat_model_max_completion_tokens=$CHAT_MODEL_MAX_COMPLETION_TOKENS
+export TF_VAR_chat_model_frequency_penalty=$CHAT_MODEL_FREQUENCY_PENALTY

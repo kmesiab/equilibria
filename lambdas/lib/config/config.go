@@ -11,18 +11,22 @@ import (
 var config *Config
 
 type Config struct {
-	OpenAIAPIKey            string `env:"OPENAI_API_KEY"`
-	DatabaseHost            string `env:"DATABASE_HOST"`
-	DatabaseUser            string `env:"DATABASE_USER"`
-	DatabasePassword        string `env:"DATABASE_PASSWORD"`
-	DatabaseName            string `env:"DATABASE_NAME"`
-	LogLevel                int    `env:"LOG_LEVEL"`
-	SMSQueueURL             string `env:"SMS_QUEUE_URL"`
-	TwilioSID               string `env:"TWILIO_SID"`
-	TwilioAuthToken         string `env:"TWILIO_AUTH_TOKEN"`
-	TwilioPhoneNumber       string `env:"TWILIO_PHONE_NUMBER"`
-	TwilioStatusCallbackURL string `env:"TWILIO_STATUS_CALLBACK_URL"`
-	TwilioVerifyServiceSID  string `env:"TWILIO_VERIFY_SERVICE_SID"`
+	OpenAIAPIKey                 string  `env:"OPENAI_API_KEY"`
+	DatabaseHost                 string  `env:"DATABASE_HOST"`
+	DatabaseUser                 string  `env:"DATABASE_USER"`
+	DatabasePassword             string  `env:"DATABASE_PASSWORD"`
+	DatabaseName                 string  `env:"DATABASE_NAME"`
+	LogLevel                     int     `env:"LOG_LEVEL"`
+	SMSQueueURL                  string  `env:"SMS_QUEUE_URL"`
+	TwilioSID                    string  `env:"TWILIO_SID"`
+	TwilioAuthToken              string  `env:"TWILIO_AUTH_TOKEN"`
+	TwilioPhoneNumber            string  `env:"TWILIO_PHONE_NUMBER"`
+	TwilioStatusCallbackURL      string  `env:"TWILIO_STATUS_CALLBACK_URL"`
+	TwilioVerifyServiceSID       string  `env:"TWILIO_VERIFY_SERVICE_SID"`
+	ChatModelName                string  `env:"CHAT_MODEL_NAME"`
+	ChatModelTemperature         float32 `env:"CHAT_MODEL_TEMPERATURE"`
+	ChatModelMaxCompletionTokens int     `env:"CHAT_MODEL_MAX_COMPLETION_TOKENS"`
+	ChatModelFrequencyPenalty    float32 `env:"CHAT_MODEL_FREQUENCY_PENALTY"`
 }
 
 func New() *Config {

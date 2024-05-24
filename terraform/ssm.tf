@@ -81,3 +81,27 @@ resource "aws_ssm_parameter" "api_endpoint" {
   type  = "SecureString"
   value = "https://${aws_api_gateway_rest_api.api_gateway.id}.execute-api.${var.region}.amazonaws.com/${aws_api_gateway_stage.api_stage.stage_name}"
 }
+
+resource "aws_ssm_parameter" "chat_model_name" {
+  name  = "/config/CHAT_MODEL_NAME"
+  type  = "SecureString"
+  value = var.chat_model_name
+}
+
+resource "aws_ssm_parameter" "chat_model_temperature" {
+  name  = "/config/CHAT_MODEL_TEMPERATURE"
+  type  = "SecureString"
+  value = var.chat_model_temperature
+}
+
+resource "aws_ssm_parameter" "chat_model_max_completion_tokens" {
+  name  = "/config/CHAT_MODEL_MAX_COMPLETION_TOKENS"
+  type  = "SecureString"
+  value = var.chat_model_max_completion_tokens
+}
+
+resource "aws_ssm_parameter" "chat_model_frequency_penalty" {
+  name  = "/config/CHAT_MODEL_FREQUENCY_PENALTY"
+  type  = "SecureString"
+  value = var.chat_model_frequency_penalty
+}
