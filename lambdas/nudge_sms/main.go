@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"slices"
 	"strconv"
 	"sync"
@@ -25,8 +26,8 @@ import (
 
 const (
 	HoursSinceLastNudge                   = 7
-	MaxNewMemories                        = 20
-	MaxOldMemories                        = 15
+	MaxNewMemories                        = 25
+	MaxOldMemories                        = 75
 	NumMemoriesToBeConsideredExistingUser = 3
 )
 
@@ -141,7 +142,20 @@ func (h *NudgeSMSLambdaHandler) Nudge(user *models.User) error {
 		promptModifier = NudgePromptExistingUserModifier
 	}
 
-	prompt := fmt.Sprintf(NudgePrompt, promptModifier, user.Firstname)
+	// Convert date to PST.  In the future we will use the user's timezone
+	location, err := time.LoadLocation("America/Los_Angeles")
+
+	if err != nil {
+		log.New("Fatal Error loading PST location: %s. Exiting.", err.Error()).AddUser(user).Log()
+
+		return err
+	}
+
+	pstDate := time.Now().In(location)
+	formattedDate := pstDate.Format("January 2, 2006 3:04 PM")
+
+	hoursSinceLastMessage := h.GetTimeStringSinceLastMessage(myMemories)
+	prompt := fmt.Sprintf(NudgePrompt, promptModifier, formattedDate, hoursSinceLastMessage, user.Firstname)
 
 	log.New("Attaching %d memories", len(*memories)).
 		Add("memory_dump", memoryDumpString).
@@ -149,7 +163,7 @@ func (h *NudgeSMSLambdaHandler) Nudge(user *models.User) error {
 		AddUser(user).
 		Log()
 
-	completion, err := h.CompletionService.GetCompletion(prompt, prompt, memories)
+	completion, err := h.CompletionService.GetCompletion(prompt, prompt, &myMemories)
 
 	if err != nil {
 		log.New("Error retrieving a few older memories for user %s", user.PhoneNumber).
@@ -226,6 +240,27 @@ func (h *NudgeSMSLambdaHandler) Nudge(user *models.User) error {
 	}
 
 	return nil
+}
+
+func (h *NudgeSMSLambdaHandler) GetTimeStringSinceLastMessage(myMemories []models.Message) string {
+
+	if len(myMemories) == 0 {
+		return "a a while"
+	}
+
+	mostRecentMemory := myMemories[len(myMemories)-1]
+	localTime := mostRecentMemory.CreatedAt.In(time.Local)
+
+	// Duration since last message
+	duration := time.Since(localTime)
+	hoursSinceLastMessage := int(math.Round(duration.Hours()))
+	timeIntervalSinceLastMessage := fmt.Sprintf("%d hours", hoursSinceLastMessage)
+
+	if hoursSinceLastMessage < 1 {
+		timeIntervalSinceLastMessage = fmt.Sprintf("%d minutes", int(math.Round(duration.Minutes())))
+	}
+
+	return timeIntervalSinceLastMessage
 }
 
 func (h *NudgeSMSLambdaHandler) GetMemories(user *models.User) (*[]models.Message, error) {
@@ -362,7 +397,7 @@ func main() {
 	)
 
 	memSvc := message.NewMemoryService(
-		message.NewMessageRepository(database), MaxNewMemories+MaxOldMemories,
+		message.NewMessageRepository(database),
 	)
 
 	llmSvc := &ai.OpenAICompletionService{
