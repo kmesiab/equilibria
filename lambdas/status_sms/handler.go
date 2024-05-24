@@ -114,7 +114,7 @@ func (s *StatusSMSLambdaHandler) ProcessMessage(
 	}
 
 	log.New("Updated %s message status to %s in the database",
-		*msg.ReferenceID, messageStatus.Name)
+		*msg.ReferenceID, messageStatus.Name).Log()
 
 	// Handle only the case where we have a failure or success.
 	switch status {

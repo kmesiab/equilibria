@@ -15,7 +15,7 @@ func main() {
 	cfg := config.Get()
 
 	if cfg == nil {
-		log.New("Could not load config")
+		log.New("Could not load config").Log()
 	}
 
 	database := db.Get(cfg)
