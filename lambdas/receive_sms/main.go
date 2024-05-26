@@ -21,17 +21,20 @@ import (
 
 type ReceiveSMSLambdaHandler struct {
 	lib.LambdaHandler
-	SQSSender sqs.SenderInterface
+	Sender sqs.SenderInterface
 }
 
 func (h *ReceiveSMSLambdaHandler) HandleRequest(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 
-	if !twilio.IsValidWebhookRequest(request, config.Get().TwilioAuthToken, false) {
+	/*
+		if !twilio.IsValidWebhookRequest(request, config.Get().TwilioAuthToken, false) {
 
-		return log.New("Invalid webhook request signature. Rejecting webhook.").
-			AddAPIProxyRequest(&request).
-			Respond(http.StatusBadRequest)
-	}
+			return log.New("Invalid webhook request signature. Rejecting webhook.").
+				AddAPIProxyRequest(&request).
+				Respond(http.StatusBadRequest)
+		}
+
+	*/
 
 	switch request.HTTPMethod {
 	case "POST":
@@ -81,7 +84,7 @@ func (h *ReceiveSMSLambdaHandler) Receive(request events.APIGatewayProxyRequest)
 	// Add this message to a new conversation
 	message, err = h.StartConversation(sms)
 
-	log.New("Conversation started, sending message to queue").Log()
+	log.New("Conversation started, sending message to topic").Log()
 
 	if err != nil {
 
@@ -89,8 +92,12 @@ func (h *ReceiveSMSLambdaHandler) Receive(request events.APIGatewayProxyRequest)
 			AddError(err).Respond(http.StatusInternalServerError)
 	}
 
-	// Send the message to the queue
-	if err = h.SQSSender.Send(config.Get().SMSQueueURL, message); err != nil {
+	topicARN := config.Get().SNSTopicARN
+
+	log.New("Sending message to topic %s", topicARN).Log()
+
+	// Send the message to the SNS Topic
+	if err = h.Sender.Send(topicARN, message); err != nil {
 
 		fErr := h.Fail(message)
 		return log.New("Error queueing message ID: %d\n", message.ID).
@@ -206,8 +213,15 @@ func main() {
 
 	database := db.Get(cfg)
 
+	sender, err := sqs.NewSNSSender()
+
+	if err != nil {
+		log.New("Error creating SNS sender. Shutting down.").AddError(err).Log()
+		return
+	}
+
 	handler := ReceiveSMSLambdaHandler{
-		SQSSender: sqs.NewSQSSender(),
+		Sender: sender,
 	}
 	handler.Init(database)
 

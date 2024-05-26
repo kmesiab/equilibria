@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"runtime/debug"
 	"slices"
 	"strconv"
 	"time"
@@ -18,6 +19,7 @@ import (
 	"github.com/kmesiab/equilibria/lambdas/lib/log"
 	"github.com/kmesiab/equilibria/lambdas/lib/message"
 	"github.com/kmesiab/equilibria/lambdas/lib/nrclex"
+	"github.com/kmesiab/equilibria/lambdas/lib/sqs"
 	"github.com/kmesiab/equilibria/lambdas/lib/twilio"
 	"github.com/kmesiab/equilibria/lambdas/lib/utils"
 	"github.com/kmesiab/equilibria/lambdas/models"
@@ -47,11 +49,18 @@ type SendSMSLambdaHandler struct {
 
 func (h *SendSMSLambdaHandler) HandleRequest(sqsEvent events.SQSEvent) {
 
+	defer func() {
+		if r := recover(); r != nil {
+			log.New("Panic while processing event: %v\nStack trace:\n%s", r, debug.Stack()).Log()
+		}
+	}()
+
 	var (
 		err      error
 		nowInUTC = time.Now().UTC()
 
-		msg models.Message
+		msg         models.Message
+		eventRecord sqs.SQSEventRecord
 	)
 
 	if err = ValidateEvent(&sqsEvent); err != nil {
@@ -60,11 +69,26 @@ func (h *SendSMSLambdaHandler) HandleRequest(sqsEvent events.SQSEvent) {
 		return
 	}
 
-	var event = sqsEvent.Records[0]
-	var body = event.Body
+	if len(sqsEvent.Records) == 0 {
 
-	if err = json.Unmarshal([]byte(body), &msg); err != nil {
-		log.New("Error unmarshalling message").AddError(err).Log()
+		log.New("No records found in the event. Shutting down.").AddError(err).Log()
+
+		return
+	}
+
+	// Unpack the SNS Event Record
+	var event = sqsEvent.Records[0]
+	if err = json.Unmarshal([]byte(event.Body), &eventRecord); err != nil {
+		log.New("Error unmarshalling event record").
+			AddError(err).Log()
+
+		return
+	}
+
+	// Unpack the message from the event record
+	if err = json.Unmarshal([]byte(eventRecord.Message), &msg); err != nil {
+		log.New("Error unmarshalling message from event record").
+			AddError(err).Log()
 
 		return
 	}
@@ -73,8 +97,13 @@ func (h *SendSMSLambdaHandler) HandleRequest(sqsEvent events.SQSEvent) {
 	recipient, err := h.UserService.GetUserByID(msg.FromUserID)
 
 	if err != nil {
+
+		theMessage, _ := json.Marshal(msg)
+
+		log.New("Unmarshalled Message from Body: %s", theMessage).Log()
+
 		log.New("Could not locate user %d.  Rejecting.", msg.FromUserID).
-			AddSQSEvent(&event).AddError(err).AddMessage(&msg).Log()
+			AddSQSEvent(&event).AddError(err).Log()
 
 		return
 	}
@@ -211,8 +240,9 @@ func (h *SendSMSLambdaHandler) HandleRequest(sqsEvent events.SQSEvent) {
 			log.New("Panic while trying to process emotions: %v", r).Log()
 		}
 
-		h.ProcessEmotions(recipient, msg, event)
 	}()
+	h.ProcessEmotions(recipient, msg, event)
+
 }
 
 func (h *SendSMSLambdaHandler) ProcessEmotions(recipient *models.User, msg models.Message, event events.SQSMessage) {
@@ -352,6 +382,8 @@ func main() {
 		MemoryService: memoryService,
 		NRCLexService: emotions.NewNRCLexService(nrcClient, nrclexRepo),
 	}
+
+	log.New("SMS Sender Lambda ready. Initializing.").Log()
 
 	handler.Init(database)
 

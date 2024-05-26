@@ -1,3 +1,4 @@
+export TF_VAR_environment=$EQ_ENVIRONMENT
 export TF_VAR_mysql_root_user=$MYSQL_ROOT_USER
 export TF_VAR_mysql_root_password=$MYSQL_ROOT_PASSWORD
 export TF_VAR_database_user=$DATABASE_USER

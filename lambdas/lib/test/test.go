@@ -294,18 +294,23 @@ func GenerateMockLastAffectedRow() sql.Result {
 // GenerateTestConfig creates a Config object with predefined test values
 func GenerateTestConfig() config.Config {
 	return config.Config{
-		OpenAIAPIKey:            "dummy_openai_api_key",
-		DatabaseHost:            "dummy_database_host",
-		DatabaseUser:            "dummy_database_user",
-		DatabasePassword:        "dummy_database_password",
-		DatabaseName:            "dummy_database_name",
-		LogLevel:                100,
-		SMSQueueURL:             "dummy_sms_queue_url",
-		TwilioSID:               "dummy_twilio_sid",
-		TwilioAuthToken:         "dummy_twilio_auth_token",
-		TwilioPhoneNumber:       "dummy_twilio_phone_number",
-		TwilioStatusCallbackURL: "dummy_twilio_status_callback_url",
-		TwilioVerifyServiceSID:  "dummy_twilio_verify_service_sid",
+		OpenAIAPIKey:                 "dummy_openai_api_key",
+		DatabaseHost:                 "dummy_database_host",
+		DatabaseUser:                 "dummy_database_user",
+		DatabasePassword:             "dummy_database_password",
+		DatabaseName:                 "dummy_database_name",
+		LogLevel:                     100,
+		SMSQueueURL:                  "dummy_sms_queue_url",
+		TwilioSID:                    "dummy_twilio_sid",
+		TwilioAuthToken:              "dummy_twilio_auth_token",
+		TwilioPhoneNumber:            "dummy_twilio_phone_number",
+		TwilioStatusCallbackURL:      "dummy_twilio_status_callback_url",
+		TwilioVerifyServiceSID:       "dummy_twilio_verify_service_sid",
+		SNSTopicARN:                  "dummy_sns_topic_arn",
+		ChatModelName:                "dummy_chat_model_name",
+		ChatModelMaxCompletionTokens: 1000,
+		ChatModelFrequencyPenalty:    1.0,
+		ChatModelTemperature:         1.0,
 	}
 }
 
@@ -373,4 +378,9 @@ func SetEnvVars() {
 	_ = os.Setenv("SMS_QUEUE_URL", cfg.SMSQueueURL)
 	_ = os.Setenv("TWILIO_STATUS_CALLBACK_URL", cfg.TwilioStatusCallbackURL)
 	_ = os.Setenv("TWILIO_VERIFY_SERVICE_SID", cfg.TwilioVerifyServiceSID)
+	_ = os.Setenv("SNS_TOPIC_ARN", cfg.SNSTopicARN)
+	_ = os.Setenv("CHAT_MODEL_TEMPERATURE", strconv.FormatFloat(float64(cfg.ChatModelTemperature), 'f', -1, 64))
+	_ = os.Setenv("CHAT_MODEL_FREQUENCY_PENALTY", strconv.FormatFloat(float64(cfg.ChatModelFrequencyPenalty), 'f', -1, 64))
+	_ = os.Setenv("CHAT_MODEL_MAX_COMPLETION_TOKENS", strconv.Itoa(cfg.ChatModelMaxCompletionTokens))
+	_ = os.Setenv("CHAT_MODEL_NAME", cfg.ChatModelName)
 }

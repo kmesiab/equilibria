@@ -10,6 +10,10 @@ variable "mysql_version" {
   default = "8.0"
 }
 
+variable "env" {
+  default = "nonprod"
+}
+
 # Environment variables
 variable "mysql_root_password" {}
 

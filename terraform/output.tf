@@ -13,3 +13,6 @@ output "sms_inbound_queue_url" {
   value = aws_sqs_queue.sms_inbound_queue.url
 }
 
+output "sns_topic_arn" {
+  value = aws_sns_topic.sms_inbound_topic.arn
+}

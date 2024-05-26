@@ -13,9 +13,9 @@ import (
 	"github.com/kmesiab/equilibria/lambdas/models"
 )
 
-type MockSQSSender struct{}
+type MockSender struct{}
 
-func (m MockSQSSender) Send(_ string, _ *models.Message) error {
+func (m MockSender) Send(_ string, _ *models.Message) error {
 	return nil
 }
 
@@ -25,7 +25,7 @@ func TestReceiveSMSLambdaHandler_Receive(t *testing.T) {
 	require.NoError(t, err, "Could not run tests, could not set up mock db")
 
 	handler := ReceiveSMSLambdaHandler{
-		SQSSender: MockSQSSender{},
+		Sender: MockSender{},
 	}
 	handler.Init(db)
 
@@ -120,7 +120,7 @@ func TestHandleRequest_ValidTwilioSignature(t *testing.T) {
 	)
 
 	handler := ReceiveSMSLambdaHandler{
-		SQSSender: MockSQSSender{},
+		Sender: MockSender{},
 	}
 	handler.Init(db)
 

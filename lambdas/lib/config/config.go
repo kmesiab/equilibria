@@ -18,6 +18,7 @@ type Config struct {
 	DatabaseName                 string  `env:"DATABASE_NAME"`
 	LogLevel                     int     `env:"LOG_LEVEL"`
 	SMSQueueURL                  string  `env:"SMS_QUEUE_URL"`
+	SNSTopicARN                  string  `env:"SNS_TOPIC_ARN"`
 	TwilioSID                    string  `env:"TWILIO_SID"`
 	TwilioAuthToken              string  `env:"TWILIO_AUTH_TOKEN"`
 	TwilioPhoneNumber            string  `env:"TWILIO_PHONE_NUMBER"`
