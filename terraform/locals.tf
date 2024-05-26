@@ -15,5 +15,6 @@ locals {
     CHAT_MODEL_TEMPERATURE           = aws_ssm_parameter.chat_model_temperature.value
     CHAT_MODEL_MAX_COMPLETION_TOKENS = aws_ssm_parameter.chat_model_max_completion_tokens.value
     CHAT_MODEL_FREQUENCY_PENALTY     = aws_ssm_parameter.chat_model_frequency_penalty.value
+    SNS_TOPIC_ARN                    = aws_sns_topic.sms_inbound_topic.arn
   }
 }

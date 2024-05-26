@@ -15,13 +15,6 @@ import (
 	"github.com/kmesiab/equilibria/lambdas/models"
 )
 
-const (
-	CompletionTemperature  = 0.7
-	CompletionServiceModel = openai.GPT4Turbo
-	CompletionMaxTokens    = 1024
-	FrequencyPenalty       = .8
-)
-
 type OpenAICompletionService struct {
 	RemoveEmojis bool
 }
@@ -30,7 +23,7 @@ func (o *OpenAICompletionService) CleanCompletionText(completion string) string 
 
 	if !encoding.IsGSMEncoded(completion) {
 
-		log.New("Detected non GSM encoded completion: %s", completion)
+		log.New("Detected non GSM encoded completion: %s", completion).Log()
 	}
 
 	completion = strings.Replace(completion, "’", "'", -1)
@@ -40,12 +33,42 @@ func (o *OpenAICompletionService) CleanCompletionText(completion string) string 
 	if o.RemoveEmojis {
 		completion = gomoji.RemoveEmojis(completion)
 
-		log.New("Removed emojis from completion: %s", completion)
+		log.New("Removed emojis from completion: %s", completion).Log()
 	}
 
 	completion = strings.TrimSpace(completion)
 
 	return completion
+}
+
+func (o *OpenAICompletionService) GetEmbeddings(text string) ([]float32, error) {
+
+	client := openai.NewClient(config.Get().OpenAIAPIKey)
+
+	embeddingsReq := openai.EmbeddingRequest{
+		Model: EmbeddingServiceModel,
+		Input: text,
+	}
+
+	embeddingsResp, err := client.CreateEmbeddings(context.Background(), embeddingsReq)
+
+	if err != nil {
+
+		return nil, err
+	}
+
+	if len(embeddingsResp.Data) == 0 {
+
+		return nil, fmt.Errorf("embeddings data slice was empty")
+	}
+
+	// Log the retrieved embeddings for audit
+	log.New("Successfully retrieved embeddings").
+		Add("embeddings_count", strconv.Itoa(len(embeddingsResp.Data[0].Embedding))).
+		Add("embeddings_object", embeddingsResp.Data[0].Object).
+		Log()
+
+	return embeddingsResp.Data[0].Embedding, nil
 }
 
 func (o *OpenAICompletionService) GetCompletion(
@@ -56,37 +79,40 @@ func (o *OpenAICompletionService) GetCompletion(
 	var (
 		promptTokenCount,
 		historyTokenCount,
-		totalTokenCount,
-		totalMemories int
+		totalTokenCount int
 
 		memoryDump = ""
 	)
 
+	var totalMemories = 0
 	var messages []openai.ChatCompletionMessage
 
-	// Add memories
-	for _, m := range *memories {
+	if memories != nil && len(*memories) > 0 {
+		totalMemories = len(*memories)
 
-		role := openai.ChatMessageRoleUser
+		// Add memories
+		for _, m := range *memories {
 
-		if m.FromUserID == 1 {
-			role = openai.ChatMessageRoleAssistant
+			role := openai.ChatMessageRoleUser
+
+			if m.FromUserID == 1 {
+				role = openai.ChatMessageRoleAssistant
+			}
+
+			body := fmt.Sprintf("%s %s", m.CreatedAt, m.Body)
+			memoryDump += body + "\n"
+
+			messages = append(messages, openai.ChatCompletionMessage{
+				Role:    role,
+				Content: body,
+			})
+
+			// Keep count of the tokens used in just the
+			// memories, and the primary payload.
+			historyTokenCount += len(m.Body)
 		}
-
-		body := fmt.Sprintf("%s %s", m.CreatedAt, m.Body)
-		memoryDump += body + "\n"
-
-		messages = append(messages, openai.ChatCompletionMessage{
-			Role:    role,
-			Content: body,
-		})
-
-		// Keep count of the tokens used in just the
-		// memories, and the primary payload.
-		historyTokenCount += len(m.Body)
 	}
 
-	totalMemories = len(*memories)
 	promptTokenCount = len(prompt)
 	totalTokenCount = historyTokenCount + promptTokenCount
 
@@ -108,18 +134,17 @@ func (o *OpenAICompletionService) GetCompletion(
 		Add("total_char_count", strconv.Itoa(totalTokenCount)).
 		Add("total_memories", strconv.Itoa(totalMemories)).
 		Add("prompt", prompt).
-		Add("memory_dump", memoryDump).
 		Log()
 
 	client := openai.NewClient(config.Get().OpenAIAPIKey)
 	resp, err := client.CreateChatCompletion(
 		context.Background(),
 		openai.ChatCompletionRequest{
-			Model:            CompletionServiceModel,
+			Model:            config.Get().ChatModelName,
 			Messages:         messages,
-			Temperature:      CompletionTemperature,
-			MaxTokens:        CompletionMaxTokens,
-			FrequencyPenalty: FrequencyPenalty,
+			Temperature:      config.Get().ChatModelTemperature,
+			MaxTokens:        config.Get().ChatModelMaxCompletionTokens,
+			FrequencyPenalty: config.Get().ChatModelFrequencyPenalty,
 		},
 	)
 

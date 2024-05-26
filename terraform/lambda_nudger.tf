@@ -9,14 +9,6 @@ resource "aws_lambda_function" "nudger_lambda" {
   environment {
     variables = local.lambda_environment_variables
   }
-
-  vpc_config {
-    subnet_ids         = [
-      aws_subnet.receiver_subnet.id, aws_subnet.outbound_subnet.id
-    ]
-    security_group_ids = [aws_security_group.nudger_lambda_sg.id]
-  }
-
 }
 
 #

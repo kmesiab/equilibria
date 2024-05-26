@@ -50,5 +50,4 @@ func PingGoogle() error {
 	}
 
 	return nil
-
 }

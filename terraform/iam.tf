@@ -187,3 +187,24 @@ resource "aws_iam_policy_attachment" "api_gateway_invoke_authorizer_attachment" 
 }
 
 
+# SNS
+
+resource "aws_iam_policy" "lambda_publish_to_sns_policy" {
+  name = "lambda_publish_to_sns_policy"
+
+  policy = jsonencode({
+    Version : "2012-10-17",
+    Statement : [
+      {
+        Effect : "Allow",
+        Action : "sns:Publish",
+        Resource : aws_sns_topic.sms_inbound_topic.arn
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_publish_to_sns_attach" {
+  role       = aws_iam_role.lambda_execution_role.name
+  policy_arn = aws_iam_policy.lambda_publish_to_sns_policy.arn
+}
