@@ -63,7 +63,8 @@ func (a *FactAgent) Do(input string) (string, error) {
 		return "", err
 	}
 
-	return a.CleanAgentResponse(a.CompletionSvc.CleanCompletionText(completion)), nil
+	resp := a.CleanAgentResponse(completion)              // trim's the ```json``` block
+	return a.CompletionSvc.CleanCompletionText(resp), nil // cleans up non GSM and emojis
 }
 
 // ParseResponse parses the OpenAI response from the FactAgent
