@@ -1,3 +1,0 @@
-package prompts
-
-const AdultPromptModifier = ``
