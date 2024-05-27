@@ -33,7 +33,7 @@ func (o *OpenAICompletionService) CleanCompletionText(completion string) string 
 	if o.RemoveEmojis {
 		completion = gomoji.RemoveEmojis(completion)
 
-		log.New("Removed emojis from completion: %s", completion).Log()
+		log.New("Removed emojis from completion").Log()
 	}
 
 	completion = strings.TrimSpace(completion)
