@@ -20,7 +20,7 @@ import (
 	"github.com/kmesiab/equilibria/lambdas/lib/ai/agents"
 )
 
-const role = "Fact Finder"
+const role = "assistant"
 
 type FactAgentFact struct {
 	Fact      string `json:"fact"`
@@ -29,6 +29,7 @@ type FactAgentFact struct {
 
 type FactAgent struct {
 	agents.AIAgent
+
 	CompletionSvc ai.CompletionServiceInterface
 }
 

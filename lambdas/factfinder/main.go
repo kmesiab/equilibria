@@ -62,7 +62,8 @@ func (h *FactFinderLambdaHandler) processMessage(record events.SQSMessage) error
 	)
 
 	if err = ValidateEvent(record); err != nil {
-		log.New("Error validating the event").
+		log.New("Event record %s had no body", record.MessageId).
+			AddMap(record.Attributes).
 			AddError(err).Log()
 
 		return err

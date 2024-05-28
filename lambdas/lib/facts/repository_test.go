@@ -193,3 +193,27 @@ func TestFactsRepository_Delete_Error(t *testing.T) {
 	err = repo.Delete(factId)
 	assert.Error(t, err)
 }
+
+func TestFactsRepository_FindByUserID(t *testing.T) {
+	db, mock, err := test.SetupMockDB()
+	assert.NoError(t, err)
+
+	repo := facts.NewRepository(db)
+	userID := int64(1)
+	mock.ExpectQuery("SELECT \\* FROM `facts` WHERE user_id = \\?").
+		WithArgs(userID).
+		WillReturnRows(sqlmock.NewRows([]string{"id", "user_id", "conversation_id", "body", "reasoning"}).
+			AddRow(1, userID, 1, "Fact 1", "Reasoning 1").
+			AddRow(2, userID, 2, "Fact 2", "Reasoning 2"))
+
+	fs, err := repo.FindByUserID(userID)
+	assert.NoError(t, err)
+	assert.NotNil(t, fs)
+	assert.Len(t, fs, 2)
+	assert.Equal(t, userID, fs[0].UserID)
+	assert.Equal(t, "Fact 1", fs[0].Body)
+	assert.Equal(t, "Reasoning 1", fs[0].Reasoning)
+	assert.Equal(t, userID, fs[1].UserID)
+	assert.Equal(t, "Fact 2", fs[1].Body)
+	assert.Equal(t, "Reasoning 2", fs[1].Reasoning)
+}

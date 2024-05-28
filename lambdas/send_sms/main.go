@@ -16,6 +16,7 @@ import (
 	"github.com/kmesiab/equilibria/lambdas/lib/config"
 	"github.com/kmesiab/equilibria/lambdas/lib/db"
 	"github.com/kmesiab/equilibria/lambdas/lib/emotions"
+	"github.com/kmesiab/equilibria/lambdas/lib/facts"
 	"github.com/kmesiab/equilibria/lambdas/lib/log"
 	"github.com/kmesiab/equilibria/lambdas/lib/message"
 	"github.com/kmesiab/equilibria/lambdas/lib/nrclex"
@@ -27,10 +28,10 @@ import (
 
 // How many memories to include in the prompt
 // Turns into 75 random user messages?
-const maxMemories = 1
+const maxOldMemories = 50
 
 // How many immediately previous messages to include in the prompt
-const maxLastFewMessages = 250
+const maxLastFewMessages = 50
 
 // How many memories you have to have before we consider you an 'existing'
 // user, so the model treats you like it knows you well.
@@ -39,12 +40,13 @@ const newUserMemoryCount = 5
 type SendSMSLambdaHandler struct {
 	lib.LambdaHandler
 
-	MaxMemories        int
+	MaxOldMemories     int
 	MaxLastFewMemories int
 
 	MemoryService     *message.MemoryService
 	CompletionService ai.CompletionServiceInterface
 	NRCLexService     *emotions.NRCLexService
+	FactService       facts.ServiceInterface
 }
 
 func (h *SendSMSLambdaHandler) HandleRequest(sqsEvent events.SQSEvent) {
@@ -122,6 +124,13 @@ func (h *SendSMSLambdaHandler) HandleRequest(sqsEvent events.SQSEvent) {
 	// Get the memories for the user
 	memories, err := h.GetMemories(recipient, event, msg)
 
+	if err != nil {
+		log.New("Error remembering history %s", err.Error()).
+			AddUser(recipient).AddSQSEvent(&event).AddError(err).AddMessage(&msg).Log()
+
+		return
+	}
+
 	log.New("Attaching %d memories", len(memories)).
 		AddUser(recipient).
 		Log()
@@ -134,11 +143,21 @@ func (h *SendSMSLambdaHandler) HandleRequest(sqsEvent events.SQSEvent) {
 		promptModifier = NewUserModifier
 	}
 
+	// Get user facts
+	factList, err := h.FactService.FindFactsByUserID(recipient.ID)
+
 	if err != nil {
-		log.New("Error remembering history %s", err.Error()).
-			AddUser(recipient).AddSQSEvent(&event).AddError(err).AddMessage(&msg).Log()
+		log.New("Error finding facts by user id: %s. Halting.", err.Error()).Log()
 
 		return
+	}
+
+	knownFacts := ""
+
+	for _, fact := range factList {
+
+		knownFacts += fmt.Sprintf("\n- Fact: %s\n\t- Clinical Reasoning: %s\n\n", fact.Body, fact.Reasoning)
+
 	}
 
 	pst, err := time.LoadLocation("America/Los_Angeles") // PST is often represented by the America/Los_Angeles timezone.
@@ -153,7 +172,7 @@ func (h *SendSMSLambdaHandler) HandleRequest(sqsEvent events.SQSEvent) {
 	pstDate := nowInUTC.In(pst)
 	formattedDate := pstDate.Format("January 2, 2006 3:04pm")
 
-	prompt := fmt.Sprintf(ConditioningPrompt, promptModifier, formattedDate, recipient.Firstname)
+	prompt := fmt.Sprintf(ConditioningPrompt, promptModifier, knownFacts, formattedDate, recipient.Firstname)
 
 	log.New("Generated Prompt").Add("prompt", prompt).
 		AddUser(recipient).AddMessage(&msg).
@@ -293,7 +312,7 @@ func (h *SendSMSLambdaHandler) GetMemories(recipient *models.User, event events.
 		return nil, err
 	}
 
-	aFewOlderMemories, err := h.MemoryService.GetRandomMessagePairs(recipient, h.MaxMemories)
+	aFewOlderMemories, err := h.MemoryService.GetRandomMessagePairs(recipient, h.MaxOldMemories)
 
 	myOldMemories := utils.FilterSlice(*aFewOlderMemories, func(m models.Message) bool {
 		return m.FromUserID != models.GetSystemUser().ID
@@ -371,16 +390,22 @@ func main() {
 	restClient := utils.NewRestClient()
 	nrcClient := nrclex.NewNRCLexClient(restClient.GetClient())
 
+	completionService := &ai.OpenAICompletionService{
+		RemoveEmojis: false,
+	}
+
+	factsRepo := facts.NewRepository(database)
+	factsService := facts.NewService(factsRepo, completionService)
+
 	handler := &SendSMSLambdaHandler{
 
-		MaxMemories:        maxMemories + maxLastFewMessages,
+		MaxOldMemories:     maxOldMemories,
 		MaxLastFewMemories: maxLastFewMessages,
 
-		CompletionService: &ai.OpenAICompletionService{
-			RemoveEmojis: false,
-		},
-		MemoryService: memoryService,
-		NRCLexService: emotions.NewNRCLexService(nrcClient, nrclexRepo),
+		FactService:       factsService,
+		CompletionService: completionService,
+		MemoryService:     memoryService,
+		NRCLexService:     emotions.NewNRCLexService(nrcClient, nrclexRepo),
 	}
 
 	log.New("SMS Sender Lambda ready. Initializing.").Log()

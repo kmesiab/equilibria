@@ -61,3 +61,7 @@ func (s *Service) DeleteFact(id int64) error {
 func (s *Service) FindFactByID(id int64) (*models.Fact, error) {
 	return s.repo.FindByID(id)
 }
+
+func (s *Service) FindFactsByUserID(userID int64) ([]*models.Fact, error) {
+	return s.repo.FindByUserID(userID)
+}

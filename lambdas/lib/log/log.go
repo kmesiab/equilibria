@@ -62,6 +62,15 @@ func (r *Log) AddUser(user *models.User) *Log {
 	return r
 }
 
+func (r *Log) AddMap(m map[string]string) *Log {
+
+	for key, value := range m {
+		r.Add(key, value)
+	}
+
+	return r
+}
+
 func (r *Log) AddError(err error) *Log {
 
 	if err != nil {
