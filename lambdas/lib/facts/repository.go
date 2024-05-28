@@ -44,3 +44,12 @@ func (r *Repository) Update(fact *models.Fact) error {
 func (r *Repository) Delete(id int64) error {
 	return r.db.Delete(&models.Fact{}, id).Error
 }
+
+// FindByUserID retrieves all facts by a user ID from the database.
+func (r *Repository) FindByUserID(userID int64) ([]*models.Fact, error) {
+	var facts []*models.Fact
+	if err := r.db.Where("user_id = ?", userID).Find(&facts).Error; err != nil {
+		return nil, err
+	}
+	return facts, nil
+}

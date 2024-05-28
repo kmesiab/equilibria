@@ -12,4 +12,5 @@ type ServiceInterface interface {
 	UpdateFact(fact *models.Fact) error
 	DeleteFact(id int64) error
 	FindFactByID(id int64) (*models.Fact, error)
+	FindFactsByUserID(userID int64) ([]*models.Fact, error)
 }

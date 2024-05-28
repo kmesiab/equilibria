@@ -245,7 +245,7 @@ func (h *NudgeSMSLambdaHandler) Nudge(user *models.User) error {
 func (h *NudgeSMSLambdaHandler) GetTimeStringSinceLastMessage(myMemories []models.Message) string {
 
 	if len(myMemories) == 0 {
-		return "a a while"
+		return "a while"
 	}
 
 	mostRecentMemory := myMemories[len(myMemories)-1]
