@@ -172,7 +172,9 @@ func (h *SendSMSLambdaHandler) HandleRequest(sqsEvent events.SQSEvent) {
 	pstDate := nowInUTC.In(pst)
 	formattedDate := pstDate.Format("January 2, 2006 3:04pm")
 
-	prompt := fmt.Sprintf(ConditioningPrompt, promptModifier, knownFacts, formattedDate, recipient.Firstname)
+	// NewHotnessPrompt string format: Modifier | Date | Name | Facts
+
+	prompt := fmt.Sprintf(NewHotnessPrompt, promptModifier, formattedDate, recipient.Firstname, knownFacts)
 
 	log.New("Generated Prompt").Add("prompt", prompt).
 		AddUser(recipient).AddMessage(&msg).
