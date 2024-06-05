@@ -8,6 +8,7 @@ type UserResponse struct {
 	PhoneNumber   string `json:"phone_number"`
 	Status        string `json:"status"`
 	StatusID      int64  `json:"status_id"`
+	UserTypeID    int64  `json:"user_type_id"`
 	PhoneVerified bool   `json:"phone_verified"`
 	NudgeEnabled  bool   `json:"nudge_enabled"`
 	ProviderCode  string `json:"provider_code"`
@@ -23,6 +24,7 @@ func MakeUserResponseFromUser(user *User) *UserResponse {
 		PhoneNumber:   user.PhoneNumber,
 		Status:        user.AccountStatus.Name,
 		StatusID:      user.AccountStatusID,
+		UserTypeID:    user.UserTypeID,
 		PhoneVerified: user.PhoneVerified,
 		NudgeEnabled:  user.NudgesEnabled(),
 		ProviderCode:  user.ProviderCode,

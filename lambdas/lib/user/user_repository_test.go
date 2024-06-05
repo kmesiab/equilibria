@@ -33,6 +33,7 @@ func TestUserRepository_Create(t *testing.T) {
 		Email:           test.DefaultTestEmail,
 		Password:        &pwd,
 		AccountStatusID: 1,
+		UserTypeID:      1,
 		ProviderCode:    "system",
 	}
 

@@ -145,6 +145,7 @@ func (repo *UserRepository) GetUsersWithoutConversationsSince(timeLimit time.Tim
 			WHERE (messages.from_user_id = users.id or messages.to_user_id = users.id)
 			AND messages.created_at > ?
 			AND phone_verified = true
+			AND user_type_id = 1
 	)`,
 		models.AccountStatusActive,
 		timeLimit.UTC(),
