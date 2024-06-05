@@ -11,6 +11,7 @@ type CustomClaims struct {
 	Lastname        string
 	AccountStatus   string
 	AccountStatusID int64
+	UserTypeID      int64
 	NudgeEnabled    bool
 	ProviderCode    string
 	PhoneVerified   bool

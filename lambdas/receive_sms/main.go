@@ -26,15 +26,12 @@ type ReceiveSMSLambdaHandler struct {
 
 func (h *ReceiveSMSLambdaHandler) HandleRequest(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 
-	/*
-		if !twilio.IsValidWebhookRequest(request, config.Get().TwilioAuthToken, false) {
+	if !twilio.IsValidWebhookRequest(request, config.Get().TwilioAuthToken, false) {
 
-			return log.New("Invalid webhook request signature. Rejecting webhook.").
-				AddAPIProxyRequest(&request).
-				Respond(http.StatusBadRequest)
-		}
-
-	*/
+		return log.New("Invalid webhook request signature. Rejecting webhook.").
+			AddAPIProxyRequest(&request).
+			Respond(http.StatusBadRequest)
+	}
 
 	switch request.HTTPMethod {
 	case "POST":

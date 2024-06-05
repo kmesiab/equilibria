@@ -45,7 +45,7 @@ func (h *FactFinderLambdaHandler) HandleRequest(sqsEvent events.SQSEvent) error 
 
 		if err != nil {
 			log.New("Error processing message: %s, error: %v", record.Body, err)
-			return err
+			return nil
 		}
 	}
 
@@ -66,7 +66,7 @@ func (h *FactFinderLambdaHandler) processMessage(record events.SQSMessage) error
 			AddMap(record.Attributes).
 			AddError(err).Log()
 
-		return err
+		return nil
 	}
 
 	// Unpack the SNS Event Record
@@ -74,7 +74,7 @@ func (h *FactFinderLambdaHandler) processMessage(record events.SQSMessage) error
 		log.New("Error unmarshalling event record").
 			AddError(err).Log()
 
-		return err
+		return nil
 	}
 
 	// Unpack the message from the event record
@@ -82,31 +82,37 @@ func (h *FactFinderLambdaHandler) processMessage(record events.SQSMessage) error
 		log.New("Error unmarshalling message from event record").
 			AddError(err).Log()
 
-		return err
+		return nil
+	}
+
+	if len(msg.Body) < 16 {
+		log.New("Message body is too short to find facts. Exiting.").Log()
+
+		return nil
 	}
 
 	// Ignore system user
 	if msg.FromUserID == models.GetSystemUser().ID {
 		log.New("Ignoring message from system user").Log()
 
-		return err
+		return nil
 	}
 
 	if currentUser, err = h.UserService.GetUserByID(msg.FromUserID); err != nil {
 		log.New("Could not locate user %d.  Rejecting.", msg.FromUserID).
 			AddError(err).AddMessage(&msg).Log()
 
-		return err
+		return nil
 	}
 
-	log.New("Fact-finding request for: %s", currentUser.PhoneNumber).Log()
+	log.New("Fact-finding request for: %s, %s", currentUser.PhoneNumber, msg.Body).Log()
 
 	identifiedFacts, err := h.Service.FindFacts(msg.Body)
 
 	if err != nil {
 		log.New("Error in FindFacts").AddError(err).Log()
 
-		return err
+		return nil
 	}
 
 	// If we detected facts...
@@ -126,7 +132,7 @@ func (h *FactFinderLambdaHandler) processMessage(record events.SQSMessage) error
 			if err != nil {
 				log.New("Error saving fact: %s", fact.Fact).AddError(err).Log()
 
-				return err
+				return nil
 			}
 
 		}

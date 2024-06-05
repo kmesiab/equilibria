@@ -12,6 +12,7 @@ type User struct {
 	Lastname        string        `gorm:"type:varchar(100)" json:"lastname"`
 	Email           string        `gorm:"type:varchar(100)" json:"email"`
 	AccountStatusID int64         `gorm:"not null;" json:"account_status_id"`
+	UserTypeID      int64         `gorm:"not null;" json:"user_type_id"`
 	NudgeEnabled    *bool         `gorm:"not null" json:"nudge_enabled"`
 	ProviderCode    string        `gorm:"type:varchar(128)" json:"provider_code"`
 }
@@ -64,6 +65,7 @@ func GetSystemUser() *User {
 		Email:           "-@-",
 		PhoneNumber:     "+18333595081",
 		AccountStatusID: 2,
+		UserTypeID:      2, // therapist
 		PhoneVerified:   true,
 		ProviderCode:    "system",
 		NudgeEnabled:    &nudgeEnabled,
