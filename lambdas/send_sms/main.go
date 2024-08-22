@@ -28,14 +28,14 @@ import (
 
 // How many memories to include in the prompt
 // Turns into 75 random user messages?
-const maxOldMemories = 50
+const maxOldMemories = 1000
 
 // How many immediately previous messages to include in the prompt
-const maxLastFewMessages = 50
+const maxLastFewMessages = 10
 
 // How many memories you have to have before we consider you an 'existing'
 // user, so the model treats you like it knows you well.
-const newUserMemoryCount = 5
+const newUserMemoryCount = 3
 
 type SendSMSLambdaHandler struct {
 	lib.LambdaHandler

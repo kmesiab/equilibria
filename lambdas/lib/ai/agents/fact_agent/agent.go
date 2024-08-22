@@ -20,7 +20,7 @@ import (
 	"github.com/kmesiab/equilibria/lambdas/lib/ai/agents"
 )
 
-const role = "assistant"
+const role = "system"
 
 type FactAgentFact struct {
 	Fact      string `json:"fact"`
