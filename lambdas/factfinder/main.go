@@ -34,7 +34,7 @@ func (h *FactFinderLambdaHandler) HandleRequest(sqsEvent events.SQSEvent) error 
 		}
 	}()
 
-	if len(sqsEvent.Records) == 0 {
+	if len(sqsEvent.Records) == 0 || sqsEvent.Records[0].Body == "" {
 		log.New("No records found in the event.  Shutting down.").Log()
 
 		return nil

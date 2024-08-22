@@ -80,8 +80,8 @@ func TestFactsRepository_Delete(t *testing.T) {
 	factId := int64(1)
 
 	mock.ExpectBegin()
-	mock.ExpectExec("DELETE FROM `facts` WHERE `facts`.`id` = ?").
-		WithArgs(factId).
+	mock.ExpectExec("UPDATE `facts` SET `deleted_at`=\\? WHERE `facts`\\.`id` = \\? AND `facts`\\.`deleted_at` IS NULL").
+		WithArgs(sqlmock.AnyArg(), factId).
 		WillReturnResult(test.GenerateMockLastAffectedRow())
 	mock.ExpectCommit()
 

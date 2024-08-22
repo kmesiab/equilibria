@@ -229,8 +229,8 @@ func TestConversationRepository_SoftDelete(t *testing.T) {
 	repo := conversation.NewConversationRepository(db)
 
 	mock.ExpectBegin()
-	mock.ExpectExec("DELETE FROM `conversations`").
-		WithArgs(1).
+	mock.ExpectExec("UPDATE `conversations` SET `deleted_at`=").
+		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg()).
 		WillReturnResult(sqlmock.NewResult(0, 1))
 	mock.ExpectCommit()
 
@@ -262,7 +262,7 @@ func TestConversationRepository_StartConversation(t *testing.T) {
 	repo := conversation.NewConversationRepository(db)
 
 	mock.ExpectBegin()
-	mock.ExpectExec("UPDATE `conversations` SET `start_time`=\\?,`updated_at`=\\? WHERE `id` = \\?").
+	mock.ExpectExec("UPDATE `conversations` SET `start_time`=\\?,`updated_at`=\\? WHERE `conversations`\\.`deleted_at` IS NULL AND `id` = \\?").
 		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
 		WillReturnResult(test.GenerateMockLastAffectedRow())
 	mock.ExpectCommit()

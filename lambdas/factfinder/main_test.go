@@ -38,7 +38,7 @@ func TestHandleRequest_NoBody(t *testing.T) {
 
 	handler.Init(db)
 	err = handler.HandleRequest(event)
-	assert.Error(t, err, "no event body found")
+	assert.Nil(t, err, "no event body found")
 }
 
 func TestHandleRequest(t *testing.T) {
