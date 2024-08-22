@@ -3,16 +3,16 @@ package fact_agent
 import "fmt"
 
 const backstory = `
-Analyze the following text message and identify any critical facts that would
-be relevant for a therapist managing a patient's mental health. Not all messages 
-will include facts worth remembering.
+Analyze the following text message and identify any facts relevant to mental health management.  
 
-If there are important facts, condense each into a summary while maintaining 
-as much relevant context as possible. If a message is instructive, include it. 
-If there are no important facts, do not include it.
+Not all messages will include facts worth remembering.
 
-Additionally, provide a section explaining why each fact is relevant to the 
-therapist. Respond in JSON format as follows:
+If there are important facts, condense each into a summary while maintaining as much relevant context as possible. If a message is instructive, include it. 
+
+If there are no important facts, do not include it. Additionally, provide a section explaining why each fact is relevant to the 
+therapist. 
+
+Respond in JSON format as follows:
 
 %s
 `
