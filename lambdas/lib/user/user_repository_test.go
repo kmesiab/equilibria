@@ -49,6 +49,7 @@ func TestUserRepository_Create(t *testing.T) {
 			newUser.Lastname,
 			newUser.Email,
 			1,
+			1,
 			newUser.NudgesEnabled(),
 			newUser.ProviderCode,
 		).WillReturnResult(test.GenerateMockLastAffectedRow())

@@ -32,6 +32,7 @@ func TestManageUser_Post(t *testing.T) {
 		Firstname:   test.DefaultTestUserFirstname,
 		Lastname:    test.DefaultTestUserLastname,
 		PhoneNumber: randomPhoneNumber,
+		UserTypeID:  1,
 		Email:       test.DefaultTestEmail,
 	}
 
@@ -54,6 +55,7 @@ func TestManageUser_Post(t *testing.T) {
 		user.Firstname,
 		user.Lastname,
 		user.Email,
+		1,
 		1,
 		user.NudgesEnabled(),
 		user.ProviderCode,

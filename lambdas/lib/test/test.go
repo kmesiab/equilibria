@@ -11,7 +11,6 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 
 	"github.com/kmesiab/equilibria/lambdas/lib/config"
 	"github.com/kmesiab/equilibria/lambdas/lib/db"
@@ -355,7 +354,7 @@ func SetupMockDB() (*gorm.DB, sqlmock.Sqlmock, error) {
 
 		// Open a GORM database connection with the mock database.
 		database, err = gorm.Open(dialector, &gorm.Config{
-			Logger: logger.Default.LogMode(logger.LogLevel((*config.Get()).LogLevel)),
+			// Logger: logger.Default.LogMode(logger.LogLevel((*config.Get()).LogLevel)),
 		})
 	}
 
